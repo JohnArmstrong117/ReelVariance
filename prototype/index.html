@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Explore how movie ratings can hide audience disagreement. An interactive Reel Variance research prototype.">
+  <title>Reel Variance — Beyond the average</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="data.js"></script>
+  <script defer src="app.js"></script>
+  <script defer src="charts.js"></script>
+</head>
+<body>
+  <header class="topbar"><a class="brand" href="index.html"><span class="brand-icon" aria-hidden="true">r<span>v</span></span> REEL VARIANCE</a><span class="edition">A different lens on film.</span><span class="prototype-badge">PROTOTYPE 1.0</span></header>
+  <div class="demo-banner"><span class="status-dot"></span><strong>Data sources</strong><span>MovieLens 32M: star ratings & timestamps · IMDb Spoiler Dataset: review text. Current charts use demo data.</span></div>
+  <main>
+    <section class="intro"><div><p class="eyebrow">THE AUDIENCE ISN’T ALWAYS IN AGREEMENT</p><h1>Same film. <br>Different <em>perspectives.</em></h1><p class="intro-copy">A single score tells you how much people liked a film. <br>Look closer to discover how much they disagree.</p></div><div class="hero-graphic" aria-hidden="true"><div class="hero-score">2.75<span>ONE AVERAGE. TWO STORIES.</span></div><div class="mini-dist consensus"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="mini-dist divided"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="hero-labels"><span>Shared opinion</span><span>Divided audience</span></div></div></section>
+    <div class="navigation-row"><nav class="view-tabs" aria-label="Main views"><button class="active" data-view="overview" aria-pressed="true">01 <span>Overview</span></button><button data-view="explore" aria-pressed="false">02 <span>Explore a film</span></button><button data-view="compare" aria-pressed="false">03 <span>Compare films</span><span id="compare-count" class="count">0</span></button></nav><button class="help-button" data-view="about" aria-pressed="false">ⓘ How to read this</button></div>
+    <section id="explore-view" hidden>
+      <div class="film-workspace">
+        <aside class="film-browser" aria-label="Find a film">
+          <div class="section-heading"><div><p class="eyebrow">FIND YOUR NEXT QUESTION</p><h2>Choose a film</h2></div><button id="reset" class="text-button">Reset</button></div>
+          <label for="search">SEARCH FILMS</label><input id="search" type="search" placeholder="Search by title…">
+          <label for="genre">GENRE</label><select id="genre"><option value="all">All genres</option></select>
+          <details class="film-filters"><summary>More filters & sorting</summary><label for="minimum">MINIMUM RATINGS <output id="minimum-value">100</output></label><input id="minimum" type="range" min="0" max="2000" step="100" value="100"><p class="hint">Small samples can exaggerate apparent disagreement.</p><label for="sort">SORT FILMS BY</label><select id="sort"><option value="variance">Most disagreement</option><option value="mean">Highest average</option><option value="count">Most ratings</option></select></details>
+          <div class="film-list-heading"><span id="result-count" role="status"></span><span>VARIANCE</span></div>
+          <div id="film-list" class="film-list"></div>
+        </aside>
+        <div class="film-focus"><article id="detail" class="detail" aria-label="Selected movie details"></article><div id="film-empty" class="film-empty" hidden><span aria-hidden="true">⌕</span><h2>No films match your search</h2><p>Try another title or genre, lower the minimum rating count, or reset your filters.</p></div></div>
+      </div>
+    </section>
+    <section id="overview-view">
+      <div class="overview-heading"><div><p class="eyebrow">BEYOND THE AVERAGE · DEMO DATA</p><h2>Which genres divide the room?</h2></div><button id="genre-clear" class="text-button">Reset selection</button></div>
+      <div class="overview-toolbar"><label for="genre-minimum">Ratings / film</label><select id="genre-minimum"><option value="0">All</option><option value="100" selected>100+</option><option value="1000">1,000+</option><option value="2000">2,000+</option></select><label for="time-period">Time grouping</label><select id="time-period"><option value="1">Year</option><option value="5">5 years</option><option value="10">Decade</option></select><span id="genre-summary"></span><span class="toolbar-hint">Select a genre in any chart to highlight it across all four.</span></div>
+      <div class="overview-grid">
+        <article class="chart-card"><div class="card-title"><span class="chart-number">01</span><h3>Average rating by genre</h3><span class="chart-unit">STARS / 5</span></div><p class="card-caption">How much did people like these films?</p><div id="genre-means"></div></article>
+        <article class="chart-card"><div class="card-title"><span class="chart-number">02</span><h3>Disagreement by genre</h3><span class="chart-unit">VARIANCE · STARS²</span></div><p class="card-caption">Higher values mean more spread within films.</p><div id="genre-variances"></div></article>
+        <article class="chart-card"><div class="card-title"><span class="chart-number">03</span><h3>The shape of opinion</h3><span class="chart-unit">0.5–5 STARS</span></div><p class="card-caption">Wider sections mean a greater share of ratings.</p><div id="genre-violins" class="overview-svg-wrap"></div></article>
+        <article class="chart-card"><div class="card-title"><span class="chart-number">04</span><h3>Disagreement over time</h3><span class="chart-unit">VARIANCE · STARS²</span></div><p class="card-caption">Average within-film variance by rating submission period.</p><div id="genre-trends" class="overview-svg-wrap"></div></article>
+      </div>
+      <div id="genre-insight" class="overview-insight" role="status">Select a genre to inspect its pattern across the four charts.</div>
+      <details class="overview-details"><summary>Chart methods & exact values</summary><p class="hint">Demo ratings and simulated dates through 2023. Bars and trend lines give each film equal weight; multi-genre films appear in each listed genre. Time periods include only films with at least two ratings in that period, so the set of contributing films can change. Calendar periods may be partial. Trends compare rating cohorts, not changes in the same people.</p><p class="hint">Violins pool ratings per genre and smooth them with a Gaussian kernel (bandwidth 0.25 stars, reflected at 0.5 and 5). All violins use a shared width scale. Smoothing is illustrative: use the exact counts below before interpreting apparent peaks.</p><div id="overview-values" class="table-scroll"></div></details>
+    </section>
+    <section id="compare-view" hidden>
+      <div class="section-heading"><div><p class="eyebrow">SIDE BY SIDE · DEMO DATA</p><h2>Similar scores. Different stories.</h2></div><button class="text-button" id="back-explore">Back to Explore a film</button></div>
+      <p class="chart-description">Choose two films. Compare how their ratings are distributed, alongside the average and variance.</p>
+      <div class="compare-pickers"><div><label for="compare-left">FILM A</label><select id="compare-left"></select></div><div><label for="compare-right">FILM B</label><select id="compare-right"></select></div></div>
+      <div id="comparison" class="comparison"></div>
+      <div id="comparison-summary" class="comparison-summary" role="status" hidden></div>
+      <p class="comparison-footnote">Both charts use the same 0.5–5 star axis and 0–100% scale. All counts and scores are synthetic. Higher variance indicates a wider spread; it does not establish two opposing camps or explain why people disagree.</p>
+    </section>
+    <section id="about-view" hidden class="about"><p class="eyebrow">A LITTLE CONTEXT</p><h2>What does disagreement look like?</h2><div class="about-grid"><article><span class="step">01</span><h3>Average = overall opinion</h3><p>The mean adds all star ratings and divides by the number of ratings. It hides how those ratings are distributed.</p></article><article><span class="step">02</span><h3>Variance = spread of opinion</h3><p>We use sample variance: sum of squared distances from the mean, divided by n − 1. Higher values indicate a wider spread, not necessarily two opposing camps. Units are stars squared.</p></article><article><span class="step">03</span><h3>Distribution = the fuller picture</h3><p>Check the histogram. A single cluster and two opposing clusters can tell very different stories. Sample size matters; a minimum-count filter is a convenience, not a confidence guarantee.</p></article></div><div class="method-note"><h3>Prototype scope & data</h3><p>All 12 films use synthetic rating histograms on the MovieLens 0.5–5.0 star scale. The Overview time chart uses deterministic simulated yearly partitions, ending in 2023; they sum exactly to each film’s full histogram. They do not represent observed historical trends. The Overview bars average film-level means and variances equally; violin plots pool rating counts. The time chart averages within-film variance in each period. Multi-genre films belong to every listed genre. Titles are used only to make the interaction recognizable. Counts, averages and variances are computed from those demo histograms. No real review text, critic scores or sentiment model is included.</p><p>The intended production source is MovieLens 32M. MovieLens user IDs are anonymous; its ratings do not identify professional critics. Ratings can reveal disagreement, but cannot establish why people disagree. IMDb review analysis would be a separate future integration. The IMDb Spoiler Dataset provides review text and movie metadata; it is not yet used in these charts.</p><p>Data integration reference: <a href="https://grouplens.org/datasets/movielens/32m/" target="_blank" rel="noreferrer">GroupLens MovieLens 32M</a>. F. Maxwell Harper and Joseph A. Konstan (2015), <a href="https://doi.org/10.1145/2827872" target="_blank" rel="noreferrer">The MovieLens Datasets: History and Context</a>.</p><p>Review-text source: <a href="https://www.kaggle.com/datasets/rmisra/imdb-spoiler-dataset" target="_blank" rel="noreferrer">IMDb Spoiler Dataset (Kaggle)</a>. Poster credits: <a href="https://www.themoviedb.org/" target="_blank" rel="noreferrer">TMDB</a> and the Wikipedia film pages for <a href="https://en.wikipedia.org/wiki/The_Lobster" target="_blank" rel="noreferrer">The Lobster</a> and <a href="https://en.wikipedia.org/wiki/A_Ghost_Story" target="_blank" rel="noreferrer">A Ghost Story</a>. Posters belong to their respective rights holders; this prototype is not endorsed by TMDB.</p></div></section>
+    <div class="compare-tray"><div><span class="eyebrow">BUILD A COMPARISON</span><div id="tray-selection">Select two films to look beyond their scores.</div></div><div class="tray-actions"><button id="clear-comparison" class="text-button" hidden>Clear</button><button id="show-comparison" class="primary" disabled>Compare films <span aria-hidden="true">↗</span></button></div></div>
+    <p id="announcement" class="announcement" role="status" aria-live="polite"></p>
+  </main>
+  <footer><span>REEL VARIANCE</span><span>John Armstrong · Brian Withrow · Joyce Lin · Paarth Kapur</span><span>project for DATA 511</span></footer>
+</body>
+</html>
