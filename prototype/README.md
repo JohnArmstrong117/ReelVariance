@@ -1,18 +1,10 @@
 # Reel Variance: Prototype 1.0
 
-A standalone web prototype for exploring audience disagreement about films. It provides a foundation for the team to integrate real data, add review analysis, and refine the interface. It uses plain HTML, CSS, and JavaScript, with no framework or build step.
+A web prototype for exploring audience disagreement about films. Based on the 1.0 version, you can integrate real data, add review analysis, and refine the interface. It uses plain HTML, CSS, and JavaScript.
 
 ## Run
 
-Open `index.html` in a modern browser. No installation, API key, backend, or internet connection is needed. Posters are stored locally.
-
-Alternatively, from the repository root:
-
-```sh
-python -m http.server 8000 --directory prototype
-```
-
-Then open http://localhost:8000. The prototype does not record or upload user activity.
+Open the link `https://johnarmstrong117.github.io/ReelVariance/` in a browser, as the website has already been deployed in Github.
 
 ## Views
 
@@ -23,7 +15,7 @@ Then open http://localhost:8000. The prototype does not record or upload user ac
 
 The layout adapts to desktop and mobile. Overview uses a compact 2-by-2 chart grid on desktop; mobile stacks charts and allows horizontal scrolling where needed.
 
-## Files and responsibilities
+## Files and their Purpose
 
 | Path | Purpose |
 | --- | --- |
@@ -39,10 +31,10 @@ The layout adapts to desktop and mobile. Overview uses a compact 2-by-2 chart gr
 
 ## Data status and calculation definitions
 
-**All numerical charts currently use synthetic data for 12 films. They are not research findings.** Film titles and posters correspond to actual films, but the local fixture IDs are demo IDs, not their MovieLens IDs. No real rating records or review text are included.
+**All numerical charts currently use synthetic data for 12 films. They are NOT from actual data.** Film titles and posters correspond to actual films. No real rating records or review text are included.
 
-- Ratings use ten bins: 0.5, 1.0, ..., 5.0 stars.
-- Mean and count are calculated from those bins. Sample variance uses `sum(count * (rating - mean)^2) / (n - 1)`. Variance is undefined (`null`) for fewer than two ratings.
+- Ratings use ten possible score: 0.5, 1.0, ..., 5.0 stars.
+- Mean and count are calculated from the ratings. Sample variance uses `sum(count * (rating - mean)^2) / (n - 1)`. Variance is undefined (`null`) for fewer than two ratings.
 - Genre bars give each film equal weight when averaging movie means and within-film variances. Multi-genre films appear in every listed genre.
 - Violins pool rating counts within each genre. They use Gaussian smoothing with a 0.25-star bandwidth, reflected boundaries at 0.5 and 5, and one shared width scale. Exact counts remain available because smoothing can affect apparent peaks.
 - Yearly bins are deterministic simulated partitions that preserve each film's lifetime histogram. They cover release year, or 1995 if later, through 2023. They are not observed historical trends.
@@ -53,7 +45,7 @@ A minimum-count filter is not a statistical confidence guarantee. High variance 
 
 ## Integrating real data
 
-The data engineer should prepare small, per-movie aggregates offline rather than load 32 million raw rating rows into the browser. The data contract for each movie is:
+Task for data engineer: prepare small, per-movie aggregates offline rather than load 32 million raw rating rows into the browser. The data contract for each movie is:
 
 ```js
 {
@@ -84,8 +76,6 @@ The planned review-text source is the [IMDb Spoiler Dataset](https://www.kaggle.
 - **Machine learning:** connect IMDb reviews, evaluate sentiment results, and retain original review evidence for any theme summaries.
 - **Visualization:** refine chart readability, interaction, and statistical explanations while preserving consistent comparison scales.
 - **Frontend:** improve layout and navigation, add approved review interactions, and maintain keyboard and mobile support.
-
-The current plain-JavaScript implementation is a starting point, not a requirement for the team's final framework. Existing datasets and `InitialExploration.ipynb` remain separate from this directory.
 
 ## Verification
 
