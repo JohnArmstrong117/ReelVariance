@@ -10,7 +10,7 @@ Open the link `https://johnarmstrong117.github.io/ReelVariance/` in a browser, a
 
 - **Overview:** four coordinated genre charts: Controversy Score by genre, Controversy Score over time, rating-distribution violins, and average film rating. Shared controls set the minimum lifetime rating count and time grouping. Selecting a genre highlights it in all four charts. Exact values and methods are expandable.
 - **Language of reviews:** synthetic review-word cloud and horizontal frequency bars, filtered by genre and star rating. Stopwords are excluded. Demo language only.
-- **Controversy and profits:** placeholder view reserved for future box-office and disagreement analysis.
+- **Controversy and profits:** four demo finance charts linking Controversy Score, budget, ratings, and genre profits. Shared All / genre chip overlays. Synthetic budgets and profits only.
 - **Reviewer bias:** placeholder view reserved for future rater-pattern analysis.
 - **Explore a film:** search and genre filtering, a scrollable film list, a poster and film details, average rating, sample variance, rating count, and a percentage histogram. Additional filters, sorting, and exact counts are expandable.
 - **Compare films:** two directly selectable A/B slots, aligned rating statistics, histograms with shared axes, and a short numerical comparison. Selections stay synchronized with Explore a film.
@@ -27,7 +27,9 @@ The layout adapts to desktop and mobile. Overview uses a compact 2-by-2 chart gr
 | `data.js` | Synthetic fixtures, summary statistics, filtering, genre aggregation, violin densities, and simulated time partitions. Exposes `window.ReelData` in the browser and CommonJS exports for tests. |
 | `app.js` | Film browser, selected-film details, percentage histograms, navigation, and shared comparison slots. |
 | `charts.js` | The four Overview charts and coordinated genre selection. |
-| `tests/data.test.cjs` | Nine tests covering statistics, filtering, genre weighting, time aggregation, and violin smoothing. |
+| `language.js` | Language of Reviews filters, word cloud, and frequency bars. |
+| `controversy.js` | Controversy and Profits finance charts with All / genre overlays. |
+| `tests/data.test.cjs` | Tests covering statistics, filtering, language words, and finance helpers. |
 | `posters/1.jpg` through `posters/12.jpg` | Corresponding theatrical posters, stored locally. |
 | `posters/README.md` | Poster-to-film mapping and image source credits. |
 | `README.md` | Setup, architecture, calculation definitions, and data-integration guidance. |

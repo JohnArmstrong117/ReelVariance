@@ -10,6 +10,7 @@
   <script defer src="app.js"></script>
   <script defer src="charts.js"></script>
   <script defer src="language.js"></script>
+  <script defer src="controversy.js"></script>
 </head>
 <body>
   <header class="topbar"><a class="brand" href="index.html"><span class="brand-icon" aria-hidden="true">r<span>v</span></span> REEL VARIANCE</a><span class="edition">A different lens on film.</span><span class="prototype-badge">PROTOTYPE 1.0</span></header>
@@ -81,11 +82,21 @@
       <details class="overview-details"><summary>Chart methods</summary><p class="hint">These charts use synthetic review-word counts derived from each film’s demo rating bins. Genre buttons are multi-select; with none selected, all genres are included. The rating slider uses a 0–10 display scale (plus All reviews) and maps onto the demo half-star bins for filtering. Both charts share one top-word list. Common stopwords such as “the”, “and”, and “for” are excluded. This is interaction scaffolding for future IMDb review text, not real review language.</p></details>
     </section>
     <section id="controversy-view" hidden>
-      <div class="coming-soon" aria-labelledby="controversy-heading">
-        <p class="eyebrow">CONTROVERSY AND PROFITS · COMING SOON</p>
-        <h2 id="controversy-heading">Features Coming Soon!</h2>
-        <p>A future view for exploring how divided audience opinion relates to box-office outcomes. Placeholder for prototype navigation.</p>
+      <div class="overview-heading"><div><p class="eyebrow">CONTROVERSY AND PROFITS · DEMO DATA</p><h2 id="controversy-heading">How does Controversy influence Success</h2></div><button id="controversy-reset" class="text-button">Reset filters</button></div>
+      <div class="language-filters controversy-filters">
+        <div class="language-filter-block">
+          <div class="language-filter-label"><span>Series</span><span class="language-filter-note">All starts on · add genres to compare</span></div>
+          <div id="controversy-genre-buttons" class="language-genre-buttons" role="group" aria-label="Filter Controversy and Profits by genre"></div>
+        </div>
+        <div class="language-filter-status"><span id="controversy-summary"></span><span class="toolbar-hint">Demo budgets and profits · not observed box office</span></div>
       </div>
+      <div class="overview-grid controversy-grid">
+        <article class="chart-card"><div class="card-title"><span class="chart-number">01</span><h3>How Profits change with Controversy Score</h3><span class="chart-unit">PROFIT · USD</span></div><p class="card-caption">Average demo profit across films at each controversy level.</p><div id="controversy-profits-line" class="overview-svg-wrap"></div></article>
+        <article class="chart-card"><div class="card-title"><span class="chart-number">02</span><h3>Does Budget affect Controversy</h3><span class="chart-unit">CONTROVERSY · STARS²</span></div><p class="card-caption">Average controversy for films in each budget band.</p><div id="controversy-budget-line" class="overview-svg-wrap"></div></article>
+        <article class="chart-card"><div class="card-title"><span class="chart-number">03</span><h3>Do better reviews mean more profit?</h3><span class="chart-unit">PROFIT · USD</span></div><p class="card-caption">Mean demo profit for films grouped by average rating.</p><div id="controversy-rating-bars" class="overview-svg-wrap"></div></article>
+        <article class="chart-card"><div class="card-title"><span class="chart-number">04</span><h3>Average profits and budgets in each genre</h3><span class="chart-unit">PROFIT / BUDGET · USD</span></div><p class="card-caption">Mean demo profit and budget by genre on a shared radial scale.</p><div id="controversy-radar" class="overview-svg-wrap"></div></article>
+      </div>
+      <details class="overview-details"><summary>Chart methods</summary><p class="hint">Budgets, revenues, and profits are deterministic demo fixtures derived from each film’s id and rating summary. Controversy Score is sample rating variance (stars²). Line charts average films inside fixed controversy or budget bins with equal film weight. The rating bars group films by rounded average star rating. The radar shows mean profit and mean budget per genre on one shared dollar scale, with tick labels on one spoke. Multi-genre films contribute to every selected genre series. These charts are interaction scaffolding, not observed box-office results.</p></details>
     </section>
     <section id="bias-view" hidden>
       <div class="coming-soon" aria-labelledby="bias-heading">

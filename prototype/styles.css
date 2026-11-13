@@ -183,7 +183,8 @@ footer span:nth-child(2) { text-align: center; line-height: 1.8; }
 :is(.overview-active, .film-active, .compare-active, .language-active, .controversy-active, .bias-active) .view-tabs button { padding: 10px 0; }
 .overview-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .overview-heading h2 { font-size: 23px; }
-#overview-view .overview-heading h2 { font-weight: 700; }
+#overview-view .overview-heading h2,
+#controversy-view .overview-heading h2 { font-weight: 700; }
 .overview-heading .eyebrow { margin: 0 0 4px; font-size: 8px; }
 .overview-lede { max-width: 820px; margin: 8px 0 2px; }
 .overview-lede p { margin: 0 0 8px; font-size: 13px; line-height: 1.7; color: var(--muted); }
@@ -280,6 +281,18 @@ footer span:nth-child(2) { text-align: center; line-height: 1.8; }
 .language-bar-axis { margin: 3px 56px 0 119px; }
 
 /* Placeholder tabs for features still in progress. */
+.controversy-filters { margin-top: 10px; }
+.controversy-grid { margin-top: 10px; }
+.controversy-svg { height: 210px; }
+.controversy-radar { height: 300px; margin: 0 auto; }
+.controversy-radar-ring { fill: none; stroke: #e4e9e0; stroke-width: 1; }
+.controversy-radar-spoke { stroke: #e4e9e0; stroke-width: 1; }
+.controversy-radar text { font: 10px Arial, sans-serif; fill: var(--muted); }
+.controversy-radar-tick { font: 9px Arial, sans-serif; fill: #6a7466; }
+.controversy-radar-budget { fill-opacity: .08; }
+.controversy-radar-legend { margin-top: 6px; }
+.controversy-legend-dashed { background: transparent !important; border: 1.5px dashed #8a6235; box-sizing: border-box; }
+
 .coming-soon { min-height: 420px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 24px; margin: 8px 0 20px; border: 1px dashed #cbd7c6; border-radius: 8px; background: linear-gradient(180deg, #fbfcf8 0%, var(--mint) 100%); }
 .coming-soon .eyebrow { margin: 0 0 18px; font-size: 10px; letter-spacing: 1.8px; }
 .coming-soon h2 { font: 48px/1.1 var(--serif); font-weight: 400; color: var(--green); margin: 0 0 18px; letter-spacing: -.8px; max-width: 14ch; }

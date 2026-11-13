@@ -1,6 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { movies, summarize, filterMovies, genreSummary, timeSummary, violinDensity, genreTimeSeries, reviewWords, STOPWORDS, genreColor } = require('../data.js');
+const { movies, summarize, filterMovies, genreSummary, timeSummary, violinDensity, genreTimeSeries, reviewWords, STOPWORDS, genreColor, controversySeries, profitByRating, profitByGenre } = require('../data.js');
 
 test('identical means can conceal opposite distributions', () => {
   const consensus = summarize([0, 0, 0, 0, 2, 0, 0, 0, 0, 0]);
@@ -102,4 +102,22 @@ test('review word filters change vocabulary without stopwords and stay determini
     assert.match(genreColor(row.genre), /^#[0-9a-f]{6}$/);
   }
   assert.deepEqual(reviewWords(movies, { genres: ['Horror'], stars: 4 }), reviewWords(movies, { genres: ['Horror'], stars: 4 }));
+});
+
+test('synthetic finance fields and controversy aggregates stay finite and genre-sensitive', () => {
+  for (const m of movies) {
+    assert.ok(Number.isFinite(m.budget) && m.budget > 0);
+    assert.ok(Number.isFinite(m.revenue));
+    assert.equal(m.profit, m.revenue - m.budget);
+  }
+  const all = controversySeries(movies, { mode: 'profitsVsControversy' });
+  const horror = controversySeries(movies, { mode: 'profitsVsControversy', genre: 'Horror' });
+  assert.ok(all.length > 0);
+  assert.ok(horror.length > 0);
+  assert.notDeepEqual(all, horror);
+  assert.ok(profitByRating(movies).every(row => Number.isFinite(row.profit)));
+  const genres = profitByGenre(movies);
+  assert.deepEqual(genres.map(g => g.genre), [...new Set(movies.flatMap(m => m.genres))].sort());
+  assert.ok(genres.every(g => Number.isFinite(g.profit) && Number.isFinite(g.budget) && g.budget > 0 && g.films > 0));
+  assert.deepEqual(controversySeries(movies, { mode: 'controversyVsBudget' }), controversySeries(movies, { mode: 'controversyVsBudget' }));
 });

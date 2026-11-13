@@ -194,8 +194,71 @@
       .sort((a, b) => b.count - a.count || a.word.localeCompare(b.word))
       .slice(0, limit);
   }
-  const enriched = movies.map(m => ({ ...m, poster: `posters/${m.id}.jpg`, timeline: makeTimeline(m), ...summarize(m.bins) }));
-  const api = { movies: enriched, summarize, filterMovies, genreSummary, timeSummary, violinDensity, genreTimeSeries, genreColor, reviewWords, STOPWORDS };
+  // Deterministic demo budgets/revenues for Controversy & Profits charts.
+  function makeFinance(movie, stats) {
+    const budget = Math.round((8 + (movie.id * 7 + movie.year % 11) % 40 + (stats.mean || 3) * 4) * 1e6);
+    const multiplier = 0.55 + (stats.mean || 3) / 5 * 1.35 + (stats.variance || 1) / 8;
+    const revenue = Math.round(budget * multiplier * (0.85 + ((movie.id * 13) % 10) / 25));
+    return { budget, revenue, profit: revenue - budget };
+  }
+  function average(values) {
+    return values.length ? values.reduce((a, b) => a + b, 0) / values.length : null;
+  }
+  function binKey(value, width) {
+    return Math.floor(value / width) * width;
+  }
+  function controversySeries(items, { mode = 'profitsVsControversy', genre = null } = {}) {
+    const pool = genre ? items.filter(m => m.genres.includes(genre)) : items;
+    const groups = new Map();
+    pool.forEach(movie => {
+      let x, y, width;
+      if (mode === 'controversyVsBudget') {
+        width = 10_000_000;
+        x = binKey(movie.budget, width);
+        y = movie.variance;
+      } else {
+        width = 0.25;
+        x = Math.round(movie.variance / width) * width;
+        y = movie.profit;
+      }
+      if (y == null || !Number.isFinite(y)) return;
+      if (!groups.has(x)) groups.set(x, []);
+      groups.get(x).push(y);
+    });
+    return [...groups.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .map(([x, values]) => ({ x, y: average(values), films: values.length }));
+  }
+  function profitByRating(items, { genre = null } = {}) {
+    const pool = genre ? items.filter(m => m.genres.includes(genre)) : items;
+    const groups = new Map();
+    pool.forEach(movie => {
+      if (movie.mean == null) return;
+      const rating = Math.round(movie.mean * 2) / 2;
+      if (!groups.has(rating)) groups.set(rating, []);
+      groups.get(rating).push(movie.profit);
+    });
+    return [...groups.entries()]
+      .sort((a, b) => a[0] - b[0])
+      .map(([rating, values]) => ({ rating, profit: average(values), films: values.length }));
+  }
+  function profitByGenre(items, { genres = null } = {}) {
+    const selected = Array.isArray(genres) && genres.length ? genres : GENRE_ORDER;
+    return selected.map(genre => {
+      const films = items.filter(m => m.genres.includes(genre));
+      return {
+        genre,
+        profit: average(films.map(m => m.profit)),
+        budget: average(films.map(m => m.budget)),
+        films: films.length
+      };
+    });
+  }
+  const enriched = movies.map(m => {
+    const stats = summarize(m.bins);
+    return { ...m, poster: `posters/${m.id}.jpg`, timeline: makeTimeline(m), ...stats, ...makeFinance(m, stats) };
+  });
+  const api = { movies: enriched, summarize, filterMovies, genreSummary, timeSummary, violinDensity, genreTimeSeries, genreColor, reviewWords, STOPWORDS, controversySeries, profitByRating, profitByGenre };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.ReelData = api;
 })(typeof window === 'undefined' ? globalThis : window);
