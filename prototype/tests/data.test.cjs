@@ -1,6 +1,6 @@
 const { test } = require('node:test');
 const assert = require('node:assert/strict');
-const { movies, summarize, filterMovies, genreSummary, timeSummary, violinDensity, genreTimeSeries } = require('../data.js');
+const { movies, summarize, filterMovies, genreSummary, timeSummary, violinDensity, genreTimeSeries, reviewWords, STOPWORDS, genreColor } = require('../data.js');
 
 test('identical means can conceal opposite distributions', () => {
   const consensus = summarize([0, 0, 0, 0, 2, 0, 0, 0, 0, 0]);
@@ -81,4 +81,23 @@ test('violin smoothing preserves bounds, symmetry, and approximately unit densit
   });
   assert.ok(Math.abs(area - 1) < .01);
   assert.ok(violinDensity(Array(10).fill(0)).every(p => p.density === 0));
+});
+
+test('review word filters change vocabulary without stopwords and stay deterministic', () => {
+  const all = reviewWords(movies);
+  const horror = reviewWords(movies, { genre: 'Horror' });
+  const comedy = reviewWords(movies, { genre: 'Comedy' });
+  const comedyLow = reviewWords(movies, { genre: 'Comedy', stars: 1 });
+  const comedyHigh = reviewWords(movies, { genre: 'Comedy', stars: 5 });
+  assert.ok(all.length > 0);
+  assert.ok(horror.length > 0);
+  assert.ok(comedy.length > 0);
+  assert.notDeepEqual(horror.map(r => r.word), comedy.map(r => r.word));
+  assert.notDeepEqual(comedyLow.map(r => r.word), comedyHigh.map(r => r.word));
+  for (const row of [...all, ...horror, ...comedy, ...comedyLow, ...comedyHigh]) {
+    assert.ok(!STOPWORDS.has(row.word.toLowerCase()));
+    assert.ok(row.count > 0);
+    assert.match(genreColor(row.genre), /^#[0-9a-f]{6}$/);
+  }
+  assert.deepEqual(reviewWords(movies, { genre: 'Horror', stars: 2 }), reviewWords(movies, { genre: 'Horror', stars: 2 }));
 });

@@ -91,7 +91,10 @@
     document.body.classList.toggle('overview-active', view === 'overview');
     document.body.classList.toggle('film-active', view === 'explore');
     document.body.classList.toggle('compare-active', view === 'compare');
-    ['overview', 'explore', 'compare', 'about'].forEach(name => { $(`${name}-view`).hidden = name !== view; });
+    document.body.classList.toggle('language-active', view === 'language');
+    document.body.classList.toggle('controversy-active', view === 'controversy');
+    document.body.classList.toggle('bias-active', view === 'bias');
+    ['overview', 'explore', 'compare', 'language', 'controversy', 'bias', 'about'].forEach(name => { $(`${name}-view`).hidden = name !== view; });
     document.querySelector('.compare-tray').hidden = view !== 'explore';
     document.querySelectorAll('[data-view]').forEach(button => { button.classList.toggle('active', button.dataset.view === view); button.setAttribute('aria-pressed', String(button.dataset.view === view)); });
     if (view === 'compare') renderComparison();

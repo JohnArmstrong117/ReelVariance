@@ -86,7 +86,102 @@
       return { genre, rows: [...groups.values()].sort((a, b) => a.year - b.year).map(row => ({ year: row.year, count: row.count, films: row.variances.length, variance: row.variances.length ? row.variances.reduce((a, b) => a + b, 0) / row.variances.length : null })) };
     });
   }
-  const api = { movies: movies.map(m => ({ ...m, poster: `posters/${m.id}.jpg`, timeline: makeTimeline(m), ...summarize(m.bins) })), summarize, filterMovies, genreSummary, timeSummary, violinDensity, genreTimeSeries };
+  // Shared Overview / Language palette; sorted genre names keep colors stable.
+  const GENRE_COLORS = ['#5e8170', '#b17e49', '#60859b', '#aa7287', '#8d70a5', '#418b85', '#918344'];
+  const GENRE_ORDER = [...new Set(movies.flatMap(m => m.genres))].sort();
+  function genreColor(genre) {
+    const index = GENRE_ORDER.indexOf(genre);
+    return GENRE_COLORS[(index < 0 ? 0 : index) % GENRE_COLORS.length];
+  }
+  // Content-word lexicons by genre and rating band. Stopwords are excluded.
+  const STOPWORDS = new Set(['a', 'an', 'and', 'are', 'as', 'at', 'be', 'but', 'by', 'for', 'from', 'had', 'has', 'have', 'he', 'her', 'his', 'i', 'if', 'in', 'into', 'is', 'it', 'its', 'me', 'my', 'of', 'on', 'or', 'our', 'she', 'so', 'than', 'that', 'the', 'their', 'them', 'then', 'there', 'these', 'they', 'this', 'to', 'too', 'was', 'we', 'were', 'what', 'when', 'which', 'who', 'will', 'with', 'you', 'your']);
+  const REVIEW_LEXICON = {
+    Adventure: {
+      low: ['tedious', 'disjointed', 'predictable', 'flat', 'rushed', 'muddled'],
+      mixed: ['quest', 'journey', 'spectacle', 'setpiece', 'worldbuilding', 'pace'],
+      high: ['thrilling', 'inventive', 'breathtaking', 'epic', 'vivid', 'wonder']
+    },
+    Comedy: {
+      low: ['unfunny', 'cringe', 'forced', 'awkward', 'dated', 'bland'],
+      mixed: ['jokes', 'gags', 'satire', 'wit', 'timing', 'absurd'],
+      high: ['hilarious', 'clever', 'charming', 'witty', 'delightful', 'sharp']
+    },
+    Drama: {
+      low: ['melodramatic', 'slow', 'pretentious', 'heavy', 'bleak', 'distant'],
+      mixed: ['character', 'performance', 'theme', 'emotion', 'dialogue', 'arc'],
+      high: ['moving', 'powerful', 'intimate', 'poignant', 'layered', 'honest']
+    },
+    Fantasy: {
+      low: ['confusing', 'overwrought', 'hollow', 'clunky', 'draggy', 'messy'],
+      mixed: ['magic', 'myth', 'dreamlike', 'imagery', 'lore', 'atmosphere'],
+      high: ['enchanting', 'imaginative', 'lyrical', 'striking', 'haunting', 'strange']
+    },
+    Horror: {
+      low: ['boring', 'cheap', 'gimmicky', 'dull', 'jump', 'lifeless'],
+      mixed: ['dread', 'tension', 'gore', 'unease', 'creepy', 'shadow'],
+      high: ['terrifying', 'chilling', 'unsettling', 'nightmarish', 'visceral', 'eerie']
+    },
+    'Sci-Fi': {
+      low: ['convoluted', 'cold', 'incoherent', 'empty', 'noisy', 'sterile'],
+      mixed: ['ideas', 'future', 'science', 'paradox', 'vision', 'concept'],
+      high: ['mindbending', 'ambitious', 'awe', 'original', 'cerebral', 'bold']
+    },
+    Thriller: {
+      low: ['contrived', 'predictable', 'hollow', 'sloppy', 'thin', 'forgettable'],
+      mixed: ['suspense', 'twist', 'plot', 'tension', 'mystery', 'pace'],
+      high: ['gripping', 'taut', 'intense', 'clever', 'relentless', 'sharp']
+    }
+  };
+  function ratingBand(binIndex) {
+    if (binIndex <= 3) return 'low';
+    if (binIndex <= 6) return 'mixed';
+    return 'high';
+  }
+  function addWordTokens(totals, word, genre, amount) {
+    if (!amount || STOPWORDS.has(word) || STOPWORDS.has(word.toLowerCase())) return;
+    if (!totals.has(word)) totals.set(word, { word, count: 0, byGenre: {} });
+    const entry = totals.get(word);
+    entry.count += amount;
+    entry.byGenre[genre] = (entry.byGenre[genre] || 0) + amount;
+  }
+  function distributeTokens(totals, words, genre, tokenCount, seed) {
+    if (!tokenCount || !words.length) return;
+    const weights = words.map((_, i) => 1 + ((seed * (i + 3) + i * i) % 7));
+    const weightSum = weights.reduce((a, b) => a + b, 0);
+    let allocated = 0;
+    words.forEach((word, i) => {
+      const n = i === words.length - 1 ? tokenCount - allocated : Math.floor(tokenCount * weights[i] / weightSum);
+      addWordTokens(totals, word, genre, n);
+      allocated += n;
+    });
+  }
+  // Deterministic synthetic review-word counts from rating bins. Demo language only.
+  function reviewWords(items, { genre = 'all', stars = 'all', limit = 24 } = {}) {
+    const starBin = stars === 'all' ? null : Math.round(Number(stars) * 2) - 1;
+    const totals = new Map();
+    items.forEach(movie => {
+      const genres = genre === 'all' ? movie.genres.slice(0, 1) : movie.genres.includes(genre) ? [genre] : [];
+      genres.forEach(g => {
+        const lexicon = REVIEW_LEXICON[g];
+        if (!lexicon) return;
+        movie.bins.forEach((count, bin) => {
+          if (starBin !== null && bin !== starBin) return;
+          const words = lexicon[ratingBand(bin)];
+          const tokens = Math.max(0, Math.round(count * (genre === 'all' ? 0.35 : 0.55)));
+          distributeTokens(totals, words, g, tokens, movie.id * 17 + bin * 3 + g.length);
+        });
+      });
+    });
+    return [...totals.values()]
+      .map(entry => {
+        const topGenre = Object.entries(entry.byGenre).sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))[0][0];
+        return { word: entry.word, count: entry.count, genre: topGenre };
+      })
+      .sort((a, b) => b.count - a.count || a.word.localeCompare(b.word))
+      .slice(0, limit);
+  }
+  const enriched = movies.map(m => ({ ...m, poster: `posters/${m.id}.jpg`, timeline: makeTimeline(m), ...summarize(m.bins) }));
+  const api = { movies: enriched, summarize, filterMovies, genreSummary, timeSummary, violinDensity, genreTimeSeries, genreColor, reviewWords, STOPWORDS };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.ReelData = api;
 })(typeof window === 'undefined' ? globalThis : window);
