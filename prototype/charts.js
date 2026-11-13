@@ -1,12 +1,10 @@
 /* Four coordinated Overview charts. All numerical fixtures remain synthetic. */
 (() => {
-  const { movies, genreSummary, genreTimeSeries, violinDensity } = window.ReelData;
+  const { movies, genreSummary, genreTimeSeries, violinDensity, genreColor } = window.ReelData;
   const $ = id => document.getElementById(id);
   const esc = text => String(text).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const fmt = n => n === null ? '—' : n.toFixed(2);
-  const colors = ['#5e8170', '#b17e49', '#60859b', '#aa7287', '#8d70a5', '#418b85', '#918344'];
-  const genres = [...new Set(movies.flatMap(m => m.genres))].sort();
-  const color = genre => colors[genres.indexOf(genre) % colors.length];
+  const color = genreColor;
   let selectedGenre = null;
   const muted = genre => selectedGenre && selectedGenre !== genre;
 

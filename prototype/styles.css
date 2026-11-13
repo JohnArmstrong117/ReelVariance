@@ -170,17 +170,17 @@ footer span:nth-child(2) { text-align: center; line-height: 1.8; }
   #explore-view .histogram svg { min-width: 500px; height: 195px; }
 }
 
-/* Compact four-chart Overview; other views keep their existing layout. */
-:is(.overview-active, .film-active, .compare-active) .topbar { height: 50px; }
-:is(.overview-active, .film-active, .compare-active) .brand-icon { width: 31px; height: 31px; font-size: 25px; line-height: 28px; padding-left: 5px; letter-spacing: -5px; }
-:is(.overview-active, .film-active, .compare-active) .brand { font-size: 13px; }
-:is(.overview-active, .film-active, .compare-active) .demo-banner { padding: 5px 15px; font-size: 10px; }
-:is(.overview-active, .film-active, .compare-active) .intro { padding: 10px 0; }
-:is(.overview-active, .film-active, .compare-active) .intro h1 { font-size: 28px; line-height: 1.1; letter-spacing: -.7px; margin: 0; }
-:is(.overview-active, .film-active, .compare-active) .intro h1 br { display: none; }
-:is(.overview-active, .film-active, .compare-active) .intro .eyebrow, :is(.overview-active, .film-active, .compare-active) .intro-copy, :is(.overview-active, .film-active, .compare-active) .hero-graphic { display: none; }
-:is(.overview-active, .film-active, .compare-active) .navigation-row { margin-bottom: 10px; }
-:is(.overview-active, .film-active, .compare-active) .view-tabs button { padding: 10px 0; }
+/* Compact chrome for main interactive views, including Language of Reviews. */
+:is(.overview-active, .film-active, .compare-active, .language-active, .controversy-active, .bias-active) .topbar { height: 50px; }
+:is(.overview-active, .film-active, .compare-active, .language-active, .controversy-active, .bias-active) .brand-icon { width: 31px; height: 31px; font-size: 25px; line-height: 28px; padding-left: 5px; letter-spacing: -5px; }
+:is(.overview-active, .film-active, .compare-active, .language-active, .controversy-active, .bias-active) .brand { font-size: 13px; }
+:is(.overview-active, .film-active, .compare-active, .language-active, .controversy-active, .bias-active) .demo-banner { padding: 5px 15px; font-size: 10px; }
+:is(.overview-active, .film-active, .compare-active, .language-active, .controversy-active, .bias-active) .intro { padding: 10px 0; }
+:is(.overview-active, .film-active, .compare-active, .language-active, .controversy-active, .bias-active) .intro h1 { font-size: 28px; line-height: 1.1; letter-spacing: -.7px; margin: 0; }
+:is(.overview-active, .film-active, .compare-active, .language-active, .controversy-active, .bias-active) .intro h1 br { display: none; }
+:is(.overview-active, .film-active, .compare-active, .language-active, .controversy-active, .bias-active) .intro .eyebrow, :is(.overview-active, .film-active, .compare-active, .language-active, .controversy-active, .bias-active) .intro-copy, :is(.overview-active, .film-active, .compare-active, .language-active, .controversy-active, .bias-active) .hero-graphic { display: none; }
+:is(.overview-active, .film-active, .compare-active, .language-active, .controversy-active, .bias-active) .navigation-row { margin-bottom: 10px; }
+:is(.overview-active, .film-active, .compare-active, .language-active, .controversy-active, .bias-active) .view-tabs button { padding: 10px 0; }
 .overview-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .overview-heading h2 { font-size: 23px; }
 .overview-heading .eyebrow { margin: 0 0 4px; font-size: 8px; }
@@ -217,23 +217,68 @@ footer span:nth-child(2) { text-align: center; line-height: 1.8; }
 .overview-insight { padding: 7px 9px; font-size: 10px; line-height: 1.5; margin-top: 8px; border-left: 2px solid var(--green); background: var(--mint); }
 .overview-details { margin: 8px 0 10px; font-size: 10px; }
 .overview-details > summary { cursor: pointer; color: var(--muted); }
-:is(.overview-active, .film-active, .compare-active) .announcement:empty { display: none; }
-:is(.overview-active, .film-active, .compare-active) footer { padding-top: 10px; padding-bottom: 10px; }
+:is(.overview-active, .film-active, .compare-active, .language-active, .controversy-active, .bias-active) .announcement:empty { display: none; }
+:is(.overview-active, .film-active, .compare-active, .language-active, .controversy-active, .bias-active) footer { padding-top: 10px; padding-bottom: 10px; }
+
+/* Language of Reviews: shared filters, word cloud, and frequency bars. */
+.overview-toolbar #language-summary { color: var(--muted); margin-left: 6px; }
+.language-tip { margin: 8px 0 0; padding: 11px 14px; border-left: 3px solid var(--green); background: var(--mint); border-radius: 0 5px 5px 0; font-size: 13px; line-height: 1.55; color: var(--ink); }
+.language-tip strong { color: var(--green); letter-spacing: .3px; }
+.language-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+.language-grid .chart-card { padding: 10px 13px; margin: 0; }
+.language-grid .chart-card h3 { font: 19px var(--serif); margin: 0; }
+.language-cloud-wrap { min-width: 0; }
+.language-cloud { display: block; width: 100%; height: 320px; background: #fbfcf8; border-radius: 4px; -webkit-user-select: none; user-select: none; }
+.language-cloud-word { cursor: pointer; outline: none; }
+.language-cloud-hit { fill: transparent; pointer-events: all; }
+.language-cloud-word text { pointer-events: none; -webkit-user-select: none; user-select: none; }
+.language-cloud-word.is-selected .language-cloud-hit { fill: rgba(32, 58, 50, .08); stroke: var(--ink); stroke-width: 1.2; }
+.language-cloud-word.is-selected text { paint-order: stroke fill; stroke: var(--ink); stroke-width: 1.4px; stroke-opacity: .45; }
+.language-cloud-word:focus-visible .language-cloud-hit { stroke: #bc6844; stroke-width: 2; }
+.language-legend { margin-top: 8px; justify-content: flex-start; }
+.language-legend span { display: flex; align-items: center; gap: 4px; font-size: 9px; color: var(--muted); }
+.language-legend i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+.language-word-bars { margin: 0; -webkit-user-select: none; user-select: none; }
+.language-word-bar { grid-template-columns: 110px 1fr 48px; gap: 9px; padding: 4px 6px; cursor: pointer; -webkit-user-select: none; user-select: none; }
+.language-word-bar > span:first-child { font-size: 11px; }
+.language-word-bar small { display: block; margin-top: 2px; font-size: 8px; color: var(--muted); }
+.language-word-bar strong { font: 15px var(--serif); }
+.language-word-bar .bar-track { height: 10px; pointer-events: none; }
+.language-word-bar .bar-track i { background: var(--genre-color); pointer-events: none; }
+.language-word-bar.chosen { background: var(--mint); outline: 1px solid #92a88c; }
+.language-word-bar.chosen .bar-track i { background: var(--genre-color); }
+.language-bar-axis { margin: 3px 56px 0 119px; }
+
+/* Placeholder tabs for features still in progress. */
+.coming-soon { min-height: 420px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px 24px; margin: 8px 0 20px; border: 1px dashed #cbd7c6; border-radius: 8px; background: linear-gradient(180deg, #fbfcf8 0%, var(--mint) 100%); }
+.coming-soon .eyebrow { margin: 0 0 18px; font-size: 10px; letter-spacing: 1.8px; }
+.coming-soon h2 { font: 48px/1.1 var(--serif); font-weight: 400; color: var(--green); margin: 0 0 18px; letter-spacing: -.8px; max-width: 14ch; }
+.coming-soon p { max-width: 420px; margin: 0; font-size: 14px; line-height: 1.8; color: var(--muted); }
+@media(max-width:700px) {
+  .coming-soon { min-height: 300px; padding: 40px 18px; }
+  .coming-soon h2 { font-size: 34px; }
+}
+
 @media(max-width:1050px) {
   .toolbar-hint { display: none; }
   .chart-unit { font-size: 7px; }
   .overview-grid .chart-card h3 { font-size: 17px; }
+  .language-grid .chart-card h3 { font-size: 17px; }
   .overview-grid .genre-bar small { display: none; }
 }
 @media(max-width:700px) {
   .overview-grid { grid-template-columns: 1fr; }
-  :is(.overview-active, .film-active, .compare-active) .intro h1 { font-size: 24px; }
-  :is(.overview-active, .film-active, .compare-active) .navigation-row { gap: 0; }
+  .language-grid { grid-template-columns: 1fr; }
+  :is(.overview-active, .film-active, .compare-active, .language-active, .controversy-active, .bias-active) .intro h1 { font-size: 24px; }
+  :is(.overview-active, .film-active, .compare-active, .language-active, .controversy-active, .bias-active) .navigation-row { gap: 0; }
   .overview-heading h2 { font-size: 21px; }
   .overview-toolbar { gap: 7px; }
-  .overview-toolbar #genre-summary { margin-left: auto; }
-  .overview-grid .chart-card { padding: 12px; }
+  .overview-toolbar #genre-summary, .overview-toolbar #language-summary { margin-left: auto; }
+  .overview-grid .chart-card, .language-grid .chart-card { padding: 12px; }
   .overview-svg { min-width: 420px; }
+  .language-cloud { height: 260px; }
+  .language-word-bar { grid-template-columns: 90px 1fr 42px; }
+  .language-bar-axis { margin-left: 99px; }
 }
 @media(max-width:900px) {
 
