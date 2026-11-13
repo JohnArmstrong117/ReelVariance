@@ -5,7 +5,11 @@
   const esc = text => String(text).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const number = n => n.toLocaleString('en-US');
   const genres = [...new Set(movies.flatMap(m => m.genres))].sort();
+  const RATING_ALL = 21;
+  const ratingSteps = Array.from({ length: 21 }, (_, i) => i / 2);
   let selectedWord = null;
+  let selectedGenres = new Set();
+  let ratingIndex = RATING_ALL;
   const measure = (() => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -15,6 +19,18 @@
       return { width, height: size * 1.15 };
     };
   })();
+
+  function currentStars() {
+    return ratingIndex >= RATING_ALL ? 'all' : ratingSteps[ratingIndex];
+  }
+
+  function ratingLabel() {
+    return ratingIndex >= RATING_ALL ? 'All reviews' : String(ratingSteps[ratingIndex]);
+  }
+
+  function ratingKnobLabel() {
+    return ratingIndex >= RATING_ALL ? 'A' : String(ratingSteps[ratingIndex]);
+  }
 
   function placeCloud(words) {
     const w = 640, h = 360, cx = w / 2, cy = h / 2;
@@ -51,7 +67,6 @@
   function cloudSvg(rows) {
     const { w, h, items } = placeCloud(rows);
     if (!items.length) return '<p class="empty">No demo words match these filters.</p>';
-    // Transparent hit rects sit under each word so clicks are not treated as text selection.
     const marks = items.map(item => {
       const active = selectedWord === item.word;
       const muted = selectedWord && !active;
@@ -81,9 +96,10 @@
     return `<div class="genre-bars language-word-bars">${bars}<div class="bar-axis language-bar-axis"><span>${ticks[0]}</span><span>${number(ticks[1])}</span><span>${number(ticks[2])}</span></div></div>`;
   }
 
-  function legend(rows, selectedGenre) {
-    if (selectedGenre !== 'all') return `<div class="genre-legend language-legend"><span><i style="background:${genreColor(selectedGenre)}"></i>${esc(selectedGenre)}</span></div>`;
-    const used = [...new Set(rows.map(r => r.genre))].sort();
+  function legend(rows) {
+    const used = selectedGenres.size
+      ? [...selectedGenres].sort()
+      : [...new Set(rows.map(r => r.genre))].sort();
     return `<div class="genre-legend language-legend">${used.map(g => `<span><i style="background:${genreColor(g)}"></i>${esc(g)}</span>`).join('')}</div>`;
   }
 
@@ -126,38 +142,75 @@
     });
   }
 
-  function render() {
-    const genre = $('language-genre').value;
-    const stars = $('language-stars').value;
-    const rows = reviewWords(movies, { genre, stars });
-    if (selectedWord && !rows.some(row => row.word === selectedWord)) selectedWord = null;
-    const films = movies.filter(m => genre === 'all' || m.genres.includes(genre)).length;
-    const starLabel = stars === 'all' ? 'all star ratings' : `${stars}★ ratings`;
-    const genreLabel = genre === 'all' ? 'all genres' : genre;
-    const selectionNote = selectedWord ? ` · selected “${selectedWord}”` : '';
-    $('language-summary').textContent = `${rows.length} words · ${films} films · ${genreLabel} · ${starLabel}${selectionNote}`;
-    $('language-cloud').innerHTML = cloudSvg(rows) + legend(rows, genre);
-    $('language-bars').innerHTML = wordBars(rows);
+  function syncGenreButtons() {
+    $('language-genre-buttons').querySelectorAll('[data-genre]').forEach(button => {
+      const on = selectedGenres.has(button.dataset.genre);
+      button.classList.toggle('is-selected', on);
+      button.setAttribute('aria-pressed', String(on));
+    });
   }
 
-  genres.forEach(genre => {
-    const option = document.createElement('option');
-    option.value = option.textContent = genre;
-    $('language-genre').append(option);
-  });
-  for (let stars = 0.5; stars <= 5; stars += 0.5) {
-    const option = document.createElement('option');
-    option.value = String(stars);
-    option.textContent = `${stars}★`;
-    $('language-stars').append(option);
+  function syncRatingUi() {
+    const slider = $('language-rating');
+    const control = document.querySelector('.language-rating-control');
+    const knob = $('language-rating-knob');
+    const label = ratingLabel();
+    const pct = ratingIndex / RATING_ALL;
+    slider.value = String(ratingIndex);
+    slider.setAttribute('aria-valuetext', label);
+    $('language-rating-value').textContent = label;
+    control?.style.setProperty('--rating-pct', String(pct));
+    if (knob) {
+      knob.textContent = ratingKnobLabel();
+      knob.classList.toggle('is-all', ratingIndex >= RATING_ALL);
+    }
   }
+
+  function render() {
+    const genresFilter = [...selectedGenres];
+    const stars = currentStars();
+    const rows = reviewWords(movies, { genres: genresFilter, stars });
+    if (selectedWord && !rows.some(row => row.word === selectedWord)) selectedWord = null;
+    const films = movies.filter(m => !genresFilter.length || m.genres.some(g => selectedGenres.has(g))).length;
+    const starLabel = stars === 'all' ? 'all reviews' : `rating ${stars}`;
+    const genreLabel = genresFilter.length ? genresFilter.join(', ') : 'all genres';
+    const selectionNote = selectedWord ? ` · selected “${selectedWord}”` : '';
+    $('language-summary').textContent = `${rows.length} words · ${films} films · ${genreLabel} · ${starLabel}${selectionNote}`;
+    $('language-cloud').innerHTML = cloudSvg(rows) + legend(rows);
+    $('language-bars').innerHTML = wordBars(rows);
+    syncGenreButtons();
+    syncRatingUi();
+  }
+
+  $('language-genre-buttons').innerHTML = genres.map(genre => {
+    const color = genreColor(genre);
+    return `<button type="button" class="language-genre-chip" data-genre="${esc(genre)}" aria-pressed="false" style="--genre-color:${color}"><i style="background:${color}"></i>${esc(genre)}</button>`;
+  }).join('');
+  $('language-rating-ticks').innerHTML = [...ratingSteps.map(String), 'ALL'].map((label, index) =>
+    `<span class="${index === RATING_ALL ? 'is-all' : ''}" style="--i:${index}">${esc(label)}</span>`
+  ).join('');
+
+  $('language-genre-buttons').addEventListener('click', event => {
+    const button = event.target.closest('[data-genre]');
+    if (!button) return;
+    const genre = button.dataset.genre;
+    if (selectedGenres.has(genre)) selectedGenres.delete(genre);
+    else selectedGenres.add(genre);
+    selectedWord = null;
+    render();
+  });
+
+  $('language-rating').addEventListener('input', event => {
+    ratingIndex = Number(event.target.value);
+    selectedWord = null;
+    render();
+  });
+
   bindSelection($('language-cloud'), 'cloud');
   bindSelection($('language-bars'), 'bars');
-  $('language-genre').addEventListener('change', () => { selectedWord = null; render(); });
-  $('language-stars').addEventListener('change', () => { selectedWord = null; render(); });
   $('language-reset').addEventListener('click', () => {
-    $('language-genre').value = 'all';
-    $('language-stars').value = 'all';
+    selectedGenres = new Set();
+    ratingIndex = RATING_ALL;
     selectedWord = null;
     render();
   });

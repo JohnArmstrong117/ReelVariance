@@ -85,19 +85,21 @@ test('violin smoothing preserves bounds, symmetry, and approximately unit densit
 
 test('review word filters change vocabulary without stopwords and stay deterministic', () => {
   const all = reviewWords(movies);
-  const horror = reviewWords(movies, { genre: 'Horror' });
-  const comedy = reviewWords(movies, { genre: 'Comedy' });
-  const comedyLow = reviewWords(movies, { genre: 'Comedy', stars: 1 });
-  const comedyHigh = reviewWords(movies, { genre: 'Comedy', stars: 5 });
+  const horror = reviewWords(movies, { genres: ['Horror'] });
+  const comedy = reviewWords(movies, { genres: ['Comedy'] });
+  const multi = reviewWords(movies, { genres: ['Horror', 'Comedy'] });
+  const comedyLow = reviewWords(movies, { genres: ['Comedy'], stars: 2 });
+  const comedyHigh = reviewWords(movies, { genres: ['Comedy'], stars: 10 });
   assert.ok(all.length > 0);
   assert.ok(horror.length > 0);
   assert.ok(comedy.length > 0);
+  assert.ok(multi.length > 0);
   assert.notDeepEqual(horror.map(r => r.word), comedy.map(r => r.word));
   assert.notDeepEqual(comedyLow.map(r => r.word), comedyHigh.map(r => r.word));
-  for (const row of [...all, ...horror, ...comedy, ...comedyLow, ...comedyHigh]) {
+  for (const row of [...all, ...horror, ...comedy, ...multi, ...comedyLow, ...comedyHigh]) {
     assert.ok(!STOPWORDS.has(row.word.toLowerCase()));
     assert.ok(row.count > 0);
     assert.match(genreColor(row.genre), /^#[0-9a-f]{6}$/);
   }
-  assert.deepEqual(reviewWords(movies, { genre: 'Horror', stars: 2 }), reviewWords(movies, { genre: 'Horror', stars: 2 }));
+  assert.deepEqual(reviewWords(movies, { genres: ['Horror'], stars: 4 }), reviewWords(movies, { genres: ['Horror'], stars: 4 }));
 });

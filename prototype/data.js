@@ -155,19 +155,33 @@
       allocated += n;
     });
   }
+  // Map a 0–10 review-score filter onto the demo MovieLens bins (score / 2).
+  function starsToBin(stars) {
+    if (stars === 'all' || stars === '' || stars == null) return null;
+    const value = Number(stars);
+    if (!Number.isFinite(value)) return null;
+    return Math.max(0, Math.min(9, Math.round(value) - 1));
+  }
   // Deterministic synthetic review-word counts from rating bins. Demo language only.
-  function reviewWords(items, { genre = 'all', stars = 'all', limit = 24 } = {}) {
-    const starBin = stars === 'all' ? null : Math.round(Number(stars) * 2) - 1;
+  // genres: [] or omitted = all genres; otherwise any listed genre may contribute.
+  function reviewWords(items, { genre = 'all', genres = null, stars = 'all', limit = 24 } = {}) {
+    const selected = Array.isArray(genres)
+      ? genres.filter(Boolean)
+      : genre === 'all' || !genre ? [] : [genre];
+    const allGenres = selected.length === 0;
+    const starBin = starsToBin(stars);
     const totals = new Map();
     items.forEach(movie => {
-      const genres = genre === 'all' ? movie.genres.slice(0, 1) : movie.genres.includes(genre) ? [genre] : [];
-      genres.forEach(g => {
+      const matched = allGenres
+        ? movie.genres.slice(0, 1)
+        : movie.genres.filter(g => selected.includes(g));
+      matched.forEach(g => {
         const lexicon = REVIEW_LEXICON[g];
         if (!lexicon) return;
         movie.bins.forEach((count, bin) => {
           if (starBin !== null && bin !== starBin) return;
           const words = lexicon[ratingBand(bin)];
-          const tokens = Math.max(0, Math.round(count * (genre === 'all' ? 0.35 : 0.55)));
+          const tokens = Math.max(0, Math.round(count * (allGenres ? 0.35 : 0.55)));
           distributeTokens(totals, words, g, tokens, movie.id * 17 + bin * 3 + g.length);
         });
       });

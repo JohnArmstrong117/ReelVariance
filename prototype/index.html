@@ -55,14 +55,30 @@
       <p class="comparison-footnote">Both charts use the same 0.5–5 star axis and 0–100% scale. All counts and scores are synthetic. Higher variance indicates a wider spread; it does not establish two opposing camps or explain why people disagree.</p>
     </section>
     <section id="language-view" hidden>
-      <div class="overview-heading"><div><p class="eyebrow">LANGUAGE OF REVIEWS · DEMO DATA</p><h2>What words show up in the ratings?</h2></div><button id="language-reset" class="text-button">Reset filters</button></div>
+      <div class="overview-heading"><div><p class="eyebrow">LANGUAGE OF REVIEWS · DEMO DATA</p><h2>Explore the language of reviews!</h2></div><button id="language-reset" class="text-button">Reset filters</button></div>
       <p class="language-tip" role="note"><strong>Tip:</strong> Click any word in the cloud or any bar in the frequency chart to focus on it. The selected word highlights in the cloud and moves to the top of the bar list. Click it again to clear.</p>
-      <div class="overview-toolbar"><label for="language-genre">Genre</label><select id="language-genre"><option value="all">All genres</option></select><label for="language-stars">Star rating</label><select id="language-stars"><option value="all">All ratings</option></select><span id="language-summary"></span><span class="toolbar-hint">Demo review language · stopwords excluded</span></div>
+      <div class="language-filters">
+        <div class="language-filter-block">
+          <div class="language-filter-label"><span>Genres</span><span class="language-filter-note">Select one or more · none selected shows all</span></div>
+          <div id="language-genre-buttons" class="language-genre-buttons" role="group" aria-label="Filter by genre"></div>
+        </div>
+        <div class="language-filter-block">
+          <div class="language-filter-label"><label for="language-rating">Review rating</label><output id="language-rating-value" for="language-rating">All reviews</output></div>
+          <div class="language-rating-control">
+            <div class="language-rating-slider">
+              <input id="language-rating" type="range" min="0" max="21" step="1" value="21" aria-valuetext="All reviews">
+              <span id="language-rating-knob" class="language-rating-knob" aria-hidden="true">A</span>
+            </div>
+            <div id="language-rating-ticks" class="language-rating-ticks" aria-hidden="true"></div>
+          </div>
+        </div>
+        <div class="language-filter-status"><span id="language-summary"></span><span class="toolbar-hint">Demo review language · stopwords excluded</span></div>
+      </div>
       <div class="language-grid">
         <article class="chart-card"><div class="card-title"><span class="chart-number">01</span><h3>Word cloud</h3><span class="chart-unit">TOP WORDS</span></div><p class="card-caption">Larger words appear more often in the filtered demo reviews.</p><div id="language-cloud" class="language-cloud-wrap"></div></article>
         <article class="chart-card"><div class="card-title"><span class="chart-number">02</span><h3>Word frequency</h3><span class="chart-unit">MENTIONS</span></div><p class="card-caption">The same words, ranked by how often they appear.</p><div id="language-bars"></div></article>
       </div>
-      <details class="overview-details"><summary>Chart methods</summary><p class="hint">These charts use synthetic review-word counts derived from each film’s demo rating bins. Filtering by genre uses that genre’s vocabulary only. Filtering by star rating keeps only tokens attributed to that half-star bin. Both charts share one top-word list. Common stopwords such as “the”, “and”, and “for” are excluded. This is interaction scaffolding for future IMDb review text, not real review language.</p></details>
+      <details class="overview-details"><summary>Chart methods</summary><p class="hint">These charts use synthetic review-word counts derived from each film’s demo rating bins. Genre buttons are multi-select; with none selected, all genres are included. The rating slider uses a 0–10 display scale (plus All reviews) and maps onto the demo half-star bins for filtering. Both charts share one top-word list. Common stopwords such as “the”, “and”, and “for” are excluded. This is interaction scaffolding for future IMDb review text, not real review language.</p></details>
     </section>
     <section id="controversy-view" hidden>
       <div class="coming-soon" aria-labelledby="controversy-heading">
