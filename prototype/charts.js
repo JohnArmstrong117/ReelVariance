@@ -46,9 +46,9 @@
         path += `${connected ? 'L' : 'M'}${x(row.year)},${y(row.variance)} `; connected = true;
         return `<circle cx="${x(row.year)}" cy="${y(row.variance)}" r="2.6" fill="${color(s.genre)}"><title>${s.genre} · ${row.year}${width > 1 ? '–' + Math.min(2023, row.year + width - 1) : ''} · variance ${fmt(row.variance)} · ${row.films} contributing films · n=${row.count}</title></circle>`;
       }).join('');
-      return `<g class="genre-mark ${muted(s.genre) ? 'is-muted' : ''}" role="button" tabindex="0" data-genre="${s.genre}" aria-pressed="${selectedGenre === s.genre}" aria-label="${s.genre} disagreement over time; select to highlight"><path d="${path}" fill="none" stroke="${color(s.genre)}" stroke-width="${selectedGenre === s.genre ? 3 : 1.7}"/>${marks}</g>`;
+      return `<g class="genre-mark ${muted(s.genre) ? 'is-muted' : ''}" role="button" tabindex="0" data-genre="${s.genre}" aria-pressed="${selectedGenre === s.genre}" aria-label="${s.genre} Controversy Score over time; select to highlight"><path d="${path}" fill="none" stroke="${color(s.genre)}" stroke-width="${selectedGenre === s.genre ? 3 : 1.7}"/>${marks}</g>`;
     }).join('');
-    return `<svg class="overview-svg" viewBox="0 0 ${w} ${h}" role="group" aria-label="Average within-film variance by genre over rating submission periods; simulated data">${grid}${ticks}${lines}</svg><div class="genre-legend">${series.map(s => `<button data-genre="${s.genre}" aria-pressed="${selectedGenre === s.genre}" class="${muted(s.genre) ? 'is-muted' : ''}"><i style="background:${color(s.genre)}"></i>${s.genre}</button>`).join('')}</div>`;
+    return `<svg class="overview-svg" viewBox="0 0 ${w} ${h}" role="group" aria-label="Controversy Score by genre over rating submission periods; simulated data">${grid}${ticks}${lines}</svg><div class="genre-legend">${series.map(s => `<button data-genre="${s.genre}" aria-pressed="${selectedGenre === s.genre}" class="${muted(s.genre) ? 'is-muted' : ''}"><i style="background:${color(s.genre)}"></i>${s.genre}</button>`).join('')}</div>`;
   }
 
   function render() {
@@ -62,7 +62,7 @@
     $('genre-violins').innerHTML = violins(rows);
     $('genre-trends').innerHTML = trends(series, width);
     const row = rows.find(r => r.genre === selectedGenre);
-    $('genre-insight').textContent = row ? `${row.genre} · ${row.films} films · average ${fmt(row.mean)} / 5 · within-film variance ${fmt(row.variance)} stars² · highlighted across all charts.` : 'Select a genre in any chart to compare its average, disagreement, distribution and history.';
+    $('genre-insight').textContent = row ? `${row.genre} · ${row.films} films · average ${fmt(row.mean)} / 5 · Controversy Score ${fmt(row.variance)} stars² · highlighted across all charts.` : 'Select a genre in any chart to compare its Controversy Score, distribution, history, and average.';
     const counts = rows.map(row => `<tr><th>${row.genre}</th><td>${row.films}</td><td>${row.count}</td><td>${fmt(row.mean)}</td><td>${fmt(row.variance)}</td>${row.bins.map(n => `<td>${n}</td>`).join('')}</tr>`).join('');
     const history = series.flatMap(s => s.rows.map(row => `<tr><th>${s.genre}</th><td>${row.year}${width > 1 ? '–' + Math.min(2023, row.year + width - 1) : ''}</td><td>${row.films}</td><td>${row.count}</td><td>${fmt(row.variance)}</td></tr>`)).join('');
     $('overview-values').innerHTML = `<table class="period-table"><caption>Genre values and exact pooled rating counts</caption><thead><tr><th>Genre</th><th>Films</th><th>Ratings</th><th>Film mean</th><th>Film variance</th>${Array.from({length:10}, (_,i) => `<th>${(i+1)/2}★</th>`).join('')}</tr></thead><tbody>${counts}</tbody></table><table class="period-table"><caption>Simulated historical periods; average within-film variance</caption><thead><tr><th>Genre</th><th>Period</th><th>Contributing films</th><th>Ratings</th><th>Variance</th></tr></thead><tbody>${history}</tbody></table>`;

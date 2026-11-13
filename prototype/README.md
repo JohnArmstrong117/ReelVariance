@@ -8,7 +8,7 @@ Open the link `https://johnarmstrong117.github.io/ReelVariance/` in a browser, a
 
 ## Views
 
-- **Overview:** four coordinated genre charts: average film rating, average within-film variance, rating-distribution violins, and variance over rating submission periods. Shared controls set the minimum lifetime rating count and time grouping. Selecting a genre highlights it in all four charts. Exact values and methods are expandable.
+- **Overview:** four coordinated genre charts: Controversy Score by genre, Controversy Score over time, rating-distribution violins, and average film rating. Shared controls set the minimum lifetime rating count and time grouping. Selecting a genre highlights it in all four charts. Exact values and methods are expandable.
 - **Language of reviews:** synthetic review-word cloud and horizontal frequency bars, filtered by genre and star rating. Stopwords are excluded. Demo language only.
 - **Controversy and profits:** placeholder view reserved for future box-office and disagreement analysis.
 - **Reviewer bias:** placeholder view reserved for future rater-pattern analysis.
