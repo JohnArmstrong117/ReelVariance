@@ -20,46 +20,63 @@
     <section id="explore-view" hidden>
       <div class="film-workspace">
         <aside class="film-browser" aria-label="Find a film">
-          <div class="section-heading"><div><p class="eyebrow">FIND YOUR NEXT QUESTION</p><h2>Choose a film</h2></div><button id="reset" class="text-button">Reset</button></div>
+          <div class="section-heading"><div><h2>Choose a film</h2></div><button id="reset" class="text-button">Reset</button></div>
           <label for="search">SEARCH FILMS</label><input id="search" type="search" placeholder="Search by title…">
           <label for="genre">GENRE</label><select id="genre"><option value="all">All genres</option></select>
-          <details class="film-filters"><summary>More filters & sorting</summary><label for="minimum">MINIMUM RATINGS <output id="minimum-value">100</output></label><input id="minimum" type="range" min="0" max="2000" step="100" value="100"><p class="hint">Small samples can exaggerate apparent disagreement.</p><label for="sort">SORT FILMS BY</label><select id="sort"><option value="variance">Most disagreement</option><option value="mean">Highest average</option><option value="count">Most ratings</option></select></details>
-          <div class="film-list-heading"><span id="result-count" role="status"></span><span>VARIANCE</span></div>
+          <details class="film-filters"><summary>More filters & sorting</summary><label for="minimum">MINIMUM RATINGS <output id="minimum-value">100</output></label><input id="minimum" type="range" min="0" max="2000" step="100" value="100"><p class="hint">Small samples can exaggerate apparent disagreement.</p><label for="sort">SORT FILMS BY</label><select id="sort"><option value="variance">Highest Controversy Score</option><option value="mean">Highest average</option><option value="count">Most ratings</option></select></details>
+          <div class="film-list-heading"><span id="result-count" role="status"></span><span>CONTROVERSY SCORE</span></div>
           <div id="film-list" class="film-list"></div>
         </aside>
         <div class="film-focus"><article id="detail" class="detail" aria-label="Selected movie details"></article><div id="film-empty" class="film-empty" hidden><span aria-hidden="true">⌕</span><h2>No films match your search</h2><p>Try another title or genre, lower the minimum rating count, or reset your filters.</p></div></div>
       </div>
     </section>
     <section id="overview-view">
-      <div class="overview-heading"><div><p class="eyebrow">BEYOND THE AVERAGE · DEMO DATA</p><h2>How much do viewers disagree?</h2></div><button id="genre-clear" class="text-button">Reset selection</button></div>
+      <div class="overview-heading"><div><h2>How much do viewers disagree?</h2></div><button id="genre-clear" class="text-button">Reset selection</button></div>
       <div class="overview-lede">
-        <p><strong>Controversy Score —</strong> The Controversy Score measures how spread out viewers’ ratings are. When most viewers give a movie similar ratings, its score is low. When ratings range from “hated it” to “loved it,” its score can be much higher.</p>
-        <p><strong>How it works.</strong> We use a statistic called variance to measure how far ratings tend to fall from a movie’s average rating. To score a genre, we average its movies’ scores, giving each movie equal weight.</p>
+        <p><strong>Controversy Score</strong> measures how spread out viewers’ ratings are. When most viewers give a movie similar ratings, its <strong>Controversy Score</strong> is low. When ratings range from “hated it” to “loved it,” the <strong>Controversy Score</strong> can be much higher.</p>
+        <p><strong>How it works.</strong> We use a statistic called variance to measure how far ratings tend to fall from a movie’s average rating. To score a genre, we average the <strong>Controversy Scores</strong> of the movies in that genre.</p>
       </div>
-      <div class="overview-toolbar"><label for="genre-minimum">Ratings / film</label><select id="genre-minimum"><option value="0">All</option><option value="100" selected>100+</option><option value="1000">1,000+</option><option value="2000">2,000+</option></select><label for="time-period">Time grouping</label><select id="time-period"><option value="1">Year</option><option value="5">5 years</option><option value="10">Decade</option></select><span id="genre-summary"></span><span class="toolbar-hint">Select a genre in any chart to highlight it across all four.</span></div>
+      <div class="overview-toolbar"><label for="genre-minimum">Minimum ratings per film</label><select id="genre-minimum"><option value="0">All</option><option value="100" selected>100+</option><option value="1000">1,000+</option><option value="2000">2,000+</option></select><span id="genre-summary"></span><span class="toolbar-hint">Select a genre in any chart to highlight it across all four.</span></div>
       <div class="overview-grid">
         <article class="chart-card"><div class="card-title"><span class="chart-number">01</span><h3>Controversy Score by genre</h3><span class="chart-unit">VARIANCE · STARS²</span></div><p class="card-caption">Higher values mean more spread within films.</p><div id="genre-variances"></div></article>
-        <article class="chart-card"><div class="card-title"><span class="chart-number">02</span><h3>Controversy Score over time</h3><span class="chart-unit">VARIANCE · STARS²</span></div><p class="card-caption">Average within-film variance by rating submission period.</p><div id="genre-trends" class="overview-svg-wrap"></div></article>
-        <article class="chart-card"><div class="card-title"><span class="chart-number">03</span><h3>The shape of opinion</h3><span class="chart-unit">0.5–5 STARS</span></div><p class="card-caption">Wider sections mean a greater share of ratings.</p><div id="genre-violins" class="overview-svg-wrap"></div></article>
+        <article class="chart-card"><div class="card-title"><span class="chart-number">02</span><h3>Controversy Score over time</h3><span class="chart-unit">VARIANCE · STARS²</span></div><p class="card-caption">Ratings are grouped by when viewers submitted them. Each point shows the average Controversy Score across films in that period.</p><div class="overview-toolbar"><label for="time-period">Time grouping</label><select id="time-period"><option value="1">Year</option><option value="5">5 years</option><option value="10">Decade</option></select></div><div id="genre-trends" class="overview-svg-wrap"></div></article>
+        <article class="chart-card"><div class="card-title"><span class="chart-number">03</span><h3>The shape of opinion</h3><span class="chart-unit">0.5–5 STARS</span></div><p class="card-caption">Star ratings increase from bottom to top. Wider sections show where more ratings cluster. The short horizontal bar marks the mean of all ratings pooled for that genre.</p><div id="genre-violins" class="overview-svg-wrap"></div></article>
         <article class="chart-card"><div class="card-title"><span class="chart-number">04</span><h3>Average rating by genre</h3><span class="chart-unit">STARS / 5</span></div><p class="card-caption">How much did people like these films?</p><div id="genre-means"></div></article>
       </div>
       <div id="genre-insight" class="overview-insight" role="status">Select a genre to inspect its pattern across the four charts.</div>
-      <details class="overview-details"><summary>Chart methods & exact values</summary><p class="hint">Demo ratings and simulated dates through 2023. Bars and trend lines give each film equal weight; multi-genre films appear in each listed genre. Time periods include only films with at least two ratings in that period, so the set of contributing films can change. Calendar periods may be partial. Trends compare rating cohorts, not changes in the same people.</p><p class="hint">Violins pool ratings per genre and smooth them with a Gaussian kernel (bandwidth 0.25 stars, reflected at 0.5 and 5). All violins use a shared width scale. Smoothing is illustrative: use the exact counts below before interpreting apparent peaks.</p><div id="overview-values" class="table-scroll"></div></details>
     </section>
     <section id="compare-view" hidden>
-      <div class="section-heading"><div><p class="eyebrow">SIDE BY SIDE · DEMO DATA</p><h2>Similar scores. Different stories.</h2></div><button class="text-button" id="back-explore">Back to Explore a film</button></div>
-      <p class="chart-description">Choose two films. Compare how their ratings are distributed, alongside the average and variance.</p>
-      <div class="compare-pickers"><div><label for="compare-left">FILM A</label><select id="compare-left"></select></div><div><label for="compare-right">FILM B</label><select id="compare-right"></select></div></div>
+      <div class="section-heading"><div><h2>Similar scores. Different stories.</h2></div><button class="text-button" id="back-explore">Back to Explore a film</button></div>
+      <p class="chart-description">Choose two films. Compare how their ratings are distributed, alongside their average ratings and Controversy Scores.</p>
+      <div class="compare-pickers">
+        <fieldset>
+          <legend>Film A</legend>
+          <div class="compare-filters">
+            <label>Year<select id="compare-left-year"><option value="">All years</option></select></label>
+            <label>Genre<select id="compare-left-genre"><option value="all">All genres</option></select></label>
+          </div>
+          <label>Search by title<input id="compare-left-search" type="search"></label>
+          <label>Movie<select id="compare-left"></select></label>
+          <p id="compare-left-status" class="hint" role="status" hidden>No matching films.</p>
+        </fieldset>
+        <fieldset>
+          <legend>Film B</legend>
+          <div class="compare-filters">
+            <label>Year<select id="compare-right-year"><option value="">All years</option></select></label>
+            <label>Genre<select id="compare-right-genre"><option value="all">All genres</option></select></label>
+          </div>
+          <label>Search by title<input id="compare-right-search" type="search"></label>
+          <label>Movie<select id="compare-right"></select></label>
+          <p id="compare-right-status" class="hint" role="status" hidden>No matching films.</p>
+        </fieldset>
+      </div>
       <div id="comparison" class="comparison"></div>
-      <div id="comparison-summary" class="comparison-summary" role="status" hidden></div>
-      <p class="comparison-footnote">Both charts use the same 0.5–5 star axis and 0–100% scale. All counts and scores are synthetic. Higher variance indicates a wider spread; it does not establish two opposing camps or explain why people disagree.</p>
     </section>
     <section id="language-view" hidden>
-      <div class="overview-heading"><div><p class="eyebrow">LANGUAGE OF REVIEWS · DEMO DATA</p><h2>Explore the language of reviews!</h2></div><button id="language-reset" class="text-button">Reset filters</button></div>
-      <p class="language-tip" role="note"><strong>Tip:</strong> Click any word in the cloud or any bar in the frequency chart to focus on it. The selected word highlights in the cloud and moves to the top of the bar list. Click it again to clear.</p>
+      <div class="overview-heading"><div><h2>Explore the language of reviews!</h2></div><button id="language-reset" class="text-button">Reset filters</button></div>
       <div class="language-filters">
         <div class="language-filter-block">
-          <div class="language-filter-label"><span>Genres</span><span class="language-filter-note">Select one or more · none selected shows all</span></div>
+          <div class="language-filter-label"><span>Genres</span><span class="language-filter-note">Select one or more</span></div>
           <div id="language-genre-buttons" class="language-genre-buttons" role="group" aria-label="Filter by genre"></div>
         </div>
         <div class="language-filter-block">
@@ -72,13 +89,14 @@
             <div id="language-rating-ticks" class="language-rating-ticks" aria-hidden="true"></div>
           </div>
         </div>
-        <div class="language-filter-status"><span id="language-summary"></span><span class="toolbar-hint">Demo review language · stopwords excluded</span></div>
+        <div class="language-filter-status"><span>Demo review language · Common words such as “the,” “and,” and “for” are excluded.</span></div>
       </div>
-      <div class="language-grid">
-        <article class="chart-card"><div class="card-title"><span class="chart-number">01</span><h3>Word cloud</h3><span class="chart-unit">TOP WORDS</span></div><p class="card-caption">Larger words appear more often in the filtered demo reviews.</p><div id="language-cloud" class="language-cloud-wrap"></div></article>
+      <p id="language-tip" class="language-tip" role="note">Select a word or bar to highlight it in both charts. Select it again to clear.</p>
+      <p id="language-empty" class="empty" role="status" hidden>No words match these filters. Try a different rating or reset the filters.</p>
+      <div id="language-charts" class="language-grid">
+        <article class="chart-card"><div class="card-title"><span class="chart-number">01</span><h3>Word cloud</h3><span class="chart-unit">TOP WORDS</span></div><p class="card-caption">Larger words appear more often in the filtered reviews. Each word takes the color of the genre with the most mentions of that word.</p><div id="language-cloud" class="language-cloud-wrap"></div></article>
         <article class="chart-card"><div class="card-title"><span class="chart-number">02</span><h3>Word frequency</h3><span class="chart-unit">MENTIONS</span></div><p class="card-caption">The same words, ranked by how often they appear.</p><div id="language-bars"></div></article>
       </div>
-      <details class="overview-details"><summary>Chart methods</summary><p class="hint">These charts use synthetic review-word counts derived from each film’s demo rating bins. Genre buttons are multi-select; with none selected, all genres are included. The rating slider uses a 0–10 display scale (plus All reviews) and maps onto the demo half-star bins for filtering. Both charts share one top-word list. Common stopwords such as “the”, “and”, and “for” are excluded. This is interaction scaffolding for future IMDb review text, not real review language.</p></details>
     </section>
     <section id="controversy-view" hidden>
       <div class="coming-soon" aria-labelledby="controversy-heading">
@@ -98,6 +116,6 @@
     <div class="compare-tray"><div><span class="eyebrow">BUILD A COMPARISON</span><div id="tray-selection">Select two films to look beyond their scores.</div></div><div class="tray-actions"><button id="clear-comparison" class="text-button" hidden>Clear</button><button id="show-comparison" class="primary" disabled>Compare films <span aria-hidden="true">↗</span></button></div></div>
     <p id="announcement" class="announcement" role="status" aria-live="polite"></p>
   </main>
-  <footer><span>REEL VARIANCE</span><span>John Armstrong · Brian Withrow · Joyce Lin · Paarth Kapur</span><span>project for DATA 511</span></footer>
+  <footer><span>REEL VARIANCE</span><span>John Armstrong · Brian Withrow · Joyce Lin · Paarth Kapur</span><span>Project for DATA 511</span></footer>
 </body>
 </html>
