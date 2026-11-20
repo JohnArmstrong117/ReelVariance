@@ -82,8 +82,9 @@
       else dim.push(m);
     });
     const dimDots = dim.map(m => `<circle cx="${x(m.budget).toFixed(1)}" cy="${y(m.variance).toFixed(1)}" r="4" fill="#cfd6cb" fill-opacity=".7"><title>${esc(info(m))}</title></circle>`).join('');
-    const baseOpacity = selected.length ? '.5' : '.85';
-    const baseDots = base.map(m => `<circle cx="${x(m.budget).toFixed(1)}" cy="${y(m.variance).toFixed(1)}" r="${selected.length ? 4 : 5}" fill="${ALL_COLOR}" fill-opacity="${baseOpacity}"><title>${esc(info(m))}</title></circle>`).join('');
+    // With All on, every film keeps its own genre color; extra genre chips fade the rest back.
+    const baseOpacity = selected.length ? '.38' : '.9';
+    const baseDots = base.map(m => `<circle cx="${x(m.budget).toFixed(1)}" cy="${y(m.variance).toFixed(1)}" r="${selected.length ? 4 : 5.5}" fill="${genreColor(m.genres[0])}" fill-opacity="${baseOpacity}"><title>${esc(info(m))}</title></circle>`).join('');
     const hotDots = hot.map(({ m, color }) => `<circle cx="${x(m.budget).toFixed(1)}" cy="${y(m.variance).toFixed(1)}" r="6.5" fill="${color}" stroke="#fff" stroke-width="1.6"><title>${esc(info(m))}</title></circle>`).join('');
     let trends = '';
     const trendNotes = [];
@@ -102,7 +103,9 @@
     }
     const clip = `<defs><clipPath id="scatter-clip"><rect x="${left}" y="${top}" width="${w - left - right}" height="${h - top - bottom}"/></clipPath></defs>`;
     const toggle = `<button type="button" class="controversy-trend-toggle" data-trend-toggle aria-pressed="${showTrends}" title="Show or hide trend lines">${showTrends ? 'Trend lines: on' : 'Trend lines: off'}</button>`;
-    const key = `<div class="genre-legend language-legend">${seriesList.map(s => `<span><i style="background:${s.color}"></i>${esc(s.label)}${s.key === 'all' && selected.length ? ' (others)' : s.key !== 'all' ? ' (highlighted)' : ''}</span>`).join('')}${showTrends ? '<span><i class="controversy-trend-swatch"></i>Trend line (least squares)</span>' : ''}${trendNotes.map(n => `<span>${esc(n)}</span>`).join('')}${toggle}</div>`;
+    const key = `<div class="genre-legend language-legend">${seriesList.map(s => s.key === 'all'
+      ? `<span>Dot color = film’s first-listed genre${selected.length ? ' · selected genres highlighted' : ''}</span>`
+      : `<span><i style="background:${s.color}"></i>${esc(s.label)}</span>`).join('')}${showTrends ? '<span><i class="controversy-trend-swatch"></i>Trend line (least squares)</span>' : ''}${trendNotes.map(n => `<span>${esc(n)}</span>`).join('')}${toggle}</div>`;
     return `<svg class="overview-svg controversy-svg" viewBox="0 0 ${w} ${h}" role="img" aria-label="Scatterplot of film budget versus Controversy Score">${clip}${grid}${axis}${dimDots}${baseDots}${trends}${hotDots}</svg>${key}`;
   }
 
