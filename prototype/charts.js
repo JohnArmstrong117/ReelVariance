@@ -26,11 +26,11 @@
       const pooledMean = row.bins.reduce((sum, n, j) => sum + n * (j + 1) / 2, 0) / row.count;
       return `<g role="button" tabindex="0" data-genre="${row.genre}" aria-pressed="${selectedGenre === row.genre}" aria-label="${row.genre}, ${row.count} pooled ratings; select to highlight" class="genre-mark ${muted(row.genre) ? 'is-muted' : ''}"><title>${row.genre} · ${row.count.toLocaleString('en-US')} ratings · pooled mean ${fmt(pooledMean)}</title><path d="M${sides[0].join('L')}L${sides[1].join('L')}Z" fill="${color(row.genre)}" fill-opacity=".40" stroke="${color(row.genre)}" stroke-width="${selectedGenre === row.genre ? 2.5 : 1.3}"/><line x1="${center - 5}" x2="${center + 5}" y1="${y(pooledMean)}" y2="${y(pooledMean)}" stroke="#203a32" stroke-width="2"/><text x="${center}" y="${h - 11}" text-anchor="middle">${row.genre}</text></g>`;
     }).join('');
-    return `<svg class="overview-svg" viewBox="0 0 ${w} ${h}" role="group" aria-label="Genre rating distributions as smoothed violin plots">${grid}${shapes}<text x="9" y="88" transform="rotate(-90 9 88)" text-anchor="middle">Stars</text></svg>`;
+    return `<svg class="overview-svg" viewBox="0 0 ${w} ${h}" role="group" aria-label="Genre rating distributions as smoothed violin plots">${grid}${shapes}<text x="15" y="88" transform="rotate(-90 15 88)" text-anchor="middle">Stars</text></svg>`;
   }
 
   function trends(series, width) {
-    const w = 600, h = 160, left = 37, right = 14, top = 12, bottom = 29;
+    const w = 600, h = 160, left = 37, right = 24, top = 12, bottom = 29;
     const years = series.flatMap(s => s.rows.map(r => r.year));
     const start = Math.min(...years), end = Math.max(...years);
     const x = year => start === end ? (left + w - right) / 2 : left + (year - start) / (end - start) * (w - left - right);
@@ -63,9 +63,6 @@
     $('genre-trends').innerHTML = trends(series, width);
     const row = rows.find(r => r.genre === selectedGenre);
     $('genre-insight').textContent = row ? `${row.genre} · ${row.films} films · average ${fmt(row.mean)} / 5 · Controversy Score ${fmt(row.variance)} stars² · highlighted across all charts.` : 'Select a genre in any chart to compare its Controversy Score, distribution, history, and average.';
-    const counts = rows.map(row => `<tr><th>${row.genre}</th><td>${row.films}</td><td>${row.count}</td><td>${fmt(row.mean)}</td><td>${fmt(row.variance)}</td>${row.bins.map(n => `<td>${n}</td>`).join('')}</tr>`).join('');
-    const history = series.flatMap(s => s.rows.map(row => `<tr><th>${s.genre}</th><td>${row.year}${width > 1 ? '–' + Math.min(2023, row.year + width - 1) : ''}</td><td>${row.films}</td><td>${row.count}</td><td>${fmt(row.variance)}</td></tr>`)).join('');
-    $('overview-values').innerHTML = `<table class="period-table"><caption>Genre values and exact pooled rating counts</caption><thead><tr><th>Genre</th><th>Films</th><th>Ratings</th><th>Film mean</th><th>Film variance</th>${Array.from({length:10}, (_,i) => `<th>${(i+1)/2}★</th>`).join('')}</tr></thead><tbody>${counts}</tbody></table><table class="period-table"><caption>Simulated historical periods; average within-film variance</caption><thead><tr><th>Genre</th><th>Period</th><th>Contributing films</th><th>Ratings</th><th>Variance</th></tr></thead><tbody>${history}</tbody></table>`;
     $('overview-view').querySelectorAll('[data-genre]').forEach(element => {
       const select = () => {
         const genre = element.dataset.genre;

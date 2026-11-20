@@ -66,7 +66,6 @@
 
   function cloudSvg(rows) {
     const { w, h, items } = placeCloud(rows);
-    if (!items.length) return '<p class="empty">No demo words match these filters.</p>';
     const marks = items.map(item => {
       const active = selectedWord === item.word;
       const muted = selectedWord && !active;
@@ -86,7 +85,6 @@
 
   function wordBars(rows) {
     const display = orderedRows(rows);
-    if (!display.length) return '<p class="empty">No demo words match these filters.</p>';
     const max = Math.max(...rows.map(row => row.count), 1);
     const ticks = [0, Math.round(max / 2), max];
     const bars = display.map(row => {
@@ -107,11 +105,10 @@
     if (!word) return;
     selectedWord = selectedWord === word ? null : word;
     render();
-    if (!selectedWord) return;
     const focusRoot = source === 'bars' ? $('language-bars') : $('language-cloud');
-    const escapeWord = window.CSS && CSS.escape ? CSS.escape(selectedWord) : selectedWord.replace(/"/g, '\\"');
+    const escapeWord = window.CSS && CSS.escape ? CSS.escape(word) : word.replace(/"/g, '\\"');
     focusRoot.querySelector(`[data-word="${escapeWord}"]`)?.focus({ preventScroll: true });
-    $('language-bars').querySelector(`[data-word="${escapeWord}"]`)?.scrollIntoView({ block: 'nearest' });
+    if (selectedWord || source === 'bars') $('language-bars').querySelector(`[data-word="${escapeWord}"]`)?.scrollIntoView({ block: 'nearest' });
   }
 
   function wordFromEvent(event) {
@@ -171,13 +168,10 @@
     const stars = currentStars();
     const rows = reviewWords(movies, { genres: genresFilter, stars });
     if (selectedWord && !rows.some(row => row.word === selectedWord)) selectedWord = null;
-    const films = movies.filter(m => !genresFilter.length || m.genres.some(g => selectedGenres.has(g))).length;
-    const starLabel = stars === 'all' ? 'all reviews' : `rating ${stars}`;
-    const genreLabel = genresFilter.length ? genresFilter.join(', ') : 'all genres';
-    const selectionNote = selectedWord ? ` · selected “${selectedWord}”` : '';
-    $('language-summary').textContent = `${rows.length} words · ${films} films · ${genreLabel} · ${starLabel}${selectionNote}`;
-    $('language-cloud').innerHTML = cloudSvg(rows) + legend(rows);
-    $('language-bars').innerHTML = wordBars(rows);
+    $('language-empty').hidden = rows.length > 0;
+    $('language-tip').hidden = $('language-charts').hidden = rows.length === 0;
+    $('language-cloud').innerHTML = rows.length ? cloudSvg(rows) + legend(rows) : '';
+    $('language-bars').innerHTML = rows.length ? wordBars(rows) : '';
     syncGenreButtons();
     syncRatingUi();
   }
