@@ -1,12 +1,15 @@
-/* Language of Reviews: synthetic word cloud and horizontal frequency bars. */
+/* Language of Reviews: precomputed IMDb word counts and horizontal frequency bars. */
 (() => {
-  const { movies, reviewWords, genreColor } = window.ReelData;
+  const { movies, reviewWords, sentimentColor } = window.ReelData;
   const $ = id => document.getElementById(id);
   const esc = text => String(text).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const number = n => n.toLocaleString('en-US');
   const genres = [...new Set(movies.flatMap(m => m.genres))].sort();
-  const RATING_ALL = 21;
-  const ratingSteps = Array.from({ length: 21 }, (_, i) => i / 2);
+  const RATING_ALL = 10;
+  // Slider stops 0-9 are 0.5 to 5 stars in half-star steps; stop 10 is All reviews.
+  const ratingSteps = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5];
+  const starText = n => Number.isInteger(n) ? String(n) : n.toFixed(1);
+  const stars1 = n => n.toFixed(1);
   let selectedWord = null;
   let selectedGenres = new Set();
   let ratingIndex = RATING_ALL;
@@ -25,11 +28,11 @@
   }
 
   function ratingLabel() {
-    return ratingIndex >= RATING_ALL ? 'All reviews' : String(ratingSteps[ratingIndex]);
+    return ratingIndex >= RATING_ALL ? 'All reviews' : `${starText(ratingSteps[ratingIndex])} ${ratingSteps[ratingIndex] === 1 ? 'star' : 'stars'}`;
   }
 
   function ratingKnobLabel() {
-    return ratingIndex >= RATING_ALL ? 'A' : String(ratingSteps[ratingIndex]);
+    return ratingIndex >= RATING_ALL ? 'A' : starText(ratingSteps[ratingIndex]);
   }
 
   function placeCloud(words) {
@@ -74,13 +77,13 @@
       const rectY = item.y - item.height / 2 - padY;
       const rectW = item.width + padX * 2;
       const rectH = item.height + padY * 2;
-      return `<g class="language-cloud-word ${active ? 'is-selected' : ''} ${muted ? 'is-muted' : ''}" role="button" tabindex="0" data-word="${esc(item.word)}" aria-pressed="${active}" aria-label="${esc(item.word)}, ${number(item.count)} mentions, ${esc(item.genre)}">
-        <title>${esc(item.word)} · ${number(item.count)} mentions · ${esc(item.genre)}. Select to highlight.</title>
+      return `<g class="language-cloud-word ${active ? 'is-selected' : ''} ${muted ? 'is-muted' : ''}" role="button" tabindex="0" data-word="${esc(item.word)}" aria-pressed="${active}" aria-label="${esc(item.word)}, ${number(item.count)} mentions, average ${stars1(item.meanStars)} stars, ${esc(item.genre)}">
+        <title>${esc(item.word)} · ${number(item.count)} mentions · average ${stars1(item.meanStars)} stars · ${esc(item.genre)}. Select to highlight.</title>
         <rect class="language-cloud-hit" x="${rectX.toFixed(1)}" y="${rectY.toFixed(1)}" width="${rectW.toFixed(1)}" height="${rectH.toFixed(1)}" rx="4"></rect>
-        <text x="${item.x.toFixed(1)}" y="${item.y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" fill="${genreColor(item.genre)}" font-size="${item.size.toFixed(1)}" font-family="Georgia, 'Times New Roman', serif" font-weight="700">${esc(item.word)}</text>
+        <text x="${item.x.toFixed(1)}" y="${item.y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" fill="${sentimentColor(item.meanStars)}" font-size="${item.size.toFixed(1)}" font-family="Georgia, 'Times New Roman', serif" font-weight="700">${esc(item.word)}</text>
       </g>`;
     }).join('');
-    return `<svg class="language-cloud" viewBox="0 0 ${w} ${h}" role="group" aria-label="Word cloud of the most common demo review words for the current filters. Select a word to highlight it and bring it to the top of the frequency list.">${marks}</svg>`;
+    return `<svg class="language-cloud" viewBox="0 0 ${w} ${h}" role="group" aria-label="Word cloud of the most common IMDb review words for the current filters. Select a word to highlight it and bring it to the top of the frequency list.">${marks}</svg>`;
   }
 
   function wordBars(rows) {
@@ -89,16 +92,14 @@
     const ticks = [0, Math.round(max / 2), max];
     const bars = display.map(row => {
       const active = selectedWord === row.word;
-      return `<button type="button" class="genre-bar language-word-bar ${active ? 'chosen' : ''}" data-word="${esc(row.word)}" aria-pressed="${active}" style="--genre-color:${genreColor(row.genre)}"><span>${esc(row.word)}<small>${esc(row.genre)}</small></span><span class="bar-track"><i style="width:${row.count / max * 100}%"></i></span><strong>${number(row.count)}</strong></button>`;
+      return `<button type="button" class="genre-bar language-word-bar ${active ? 'chosen' : ''}" data-word="${esc(row.word)}" aria-pressed="${active}" title="${esc(row.word)} · average ${stars1(row.meanStars)} stars" style="--genre-color:${sentimentColor(row.meanStars)}"><span>${esc(row.word)}<small>${esc(row.genre)}</small></span><span class="bar-track"><i style="width:${row.count / max * 100}%"></i></span><strong>${number(row.count)}</strong></button>`;
     }).join('');
     return `<div class="genre-bars language-word-bars">${bars}<div class="bar-axis language-bar-axis"><span>${ticks[0]}</span><span>${number(ticks[1])}</span><span>${number(ticks[2])}</span></div></div>`;
   }
 
-  function legend(rows) {
-    const used = selectedGenres.size
-      ? [...selectedGenres].sort()
-      : [...new Set(rows.map(r => r.genre))].sort();
-    return `<div class="genre-legend language-legend">${used.map(g => `<span><i style="background:${genreColor(g)}"></i>${esc(g)}</span>`).join('')}</div>`;
+  function legend() {
+    const stops = [1, 2, 3, 4, 5].map(n => sentimentColor(n)).join(', ');
+    return `<div class="sentiment-legend" role="img" aria-label="Color scale: orange for 1 star reviews to blue for 5 star reviews"><span>1 star</span><i style="background:linear-gradient(90deg, ${stops})"></i><span>5 stars</span><small>Average rating of reviews using the word</small></div>`;
   }
 
   function selectWord(word, source = 'cloud') {
@@ -157,6 +158,7 @@
     slider.setAttribute('aria-valuetext', label);
     $('language-rating-value').textContent = label;
     control?.style.setProperty('--rating-pct', String(pct));
+    control?.style.setProperty('--rating-max', String(RATING_ALL));
     if (knob) {
       knob.textContent = ratingKnobLabel();
       knob.classList.toggle('is-all', ratingIndex >= RATING_ALL);
@@ -170,17 +172,16 @@
     if (selectedWord && !rows.some(row => row.word === selectedWord)) selectedWord = null;
     $('language-empty').hidden = rows.length > 0;
     $('language-tip').hidden = $('language-charts').hidden = rows.length === 0;
-    $('language-cloud').innerHTML = rows.length ? cloudSvg(rows) + legend(rows) : '';
+    $('language-cloud').innerHTML = rows.length ? cloudSvg(rows) + legend() : '';
     $('language-bars').innerHTML = rows.length ? wordBars(rows) : '';
     syncGenreButtons();
     syncRatingUi();
   }
 
   $('language-genre-buttons').innerHTML = genres.map(genre => {
-    const color = genreColor(genre);
-    return `<button type="button" class="language-genre-chip" data-genre="${esc(genre)}" aria-pressed="false" style="--genre-color:${color}"><i style="background:${color}"></i>${esc(genre)}</button>`;
+    return `<button type="button" class="language-genre-chip" data-genre="${esc(genre)}" aria-pressed="false">${esc(genre)}</button>`;
   }).join('');
-  $('language-rating-ticks').innerHTML = [...ratingSteps.map(String), 'ALL'].map((label, index) =>
+  $('language-rating-ticks').innerHTML = [...ratingSteps.map(starText), 'ALL'].map((label, index) =>
     `<span class="${index === RATING_ALL ? 'is-all' : ''}" style="--i:${index}">${esc(label)}</span>`
   ).join('');
 

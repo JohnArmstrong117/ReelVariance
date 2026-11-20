@@ -1,4 +1,4 @@
-/* Controversy & Profits: synthetic finance charts with All / genre overlays. */
+/* Controversy and profits: TMDB budget and revenue where both are known. */
 (() => {
   const { movies, genreColor, controversySeries, profitByRating, profitByGenre } = window.ReelData;
   const $ = id => document.getElementById(id);
@@ -35,7 +35,7 @@
     const packed = seriesList.map(s => ({ ...s, rows: controversySeries(movies, { mode, genre: s.genre }) }));
     const xs = packed.flatMap(s => s.rows.map(r => r.x));
     const ys = packed.flatMap(s => s.rows.map(r => r.y));
-    if (!xs.length) return '<p class="empty">No demo points match these filters.</p>';
+    if (!xs.length) return '<p class="empty">No films with both a budget and revenue match these filters.</p>';
     const xMin = Math.min(...xs), xMax = Math.max(...xs);
     const yMin = Math.min(0, ...ys), yMax = Math.max(...ys);
     const xSpan = xMax - xMin || 1, ySpan = yMax - yMin || 1;
@@ -62,7 +62,7 @@
     const selected = seriesList.filter(s => s.key !== 'all').map(s => s.key);
     const allOn = seriesList.some(s => s.key === 'all');
     const points = movies.filter(m => Number.isFinite(m.budget) && Number.isFinite(m.variance));
-    if (!points.length) return '<p class="empty">No demo points match these filters.</p>';
+    if (!points.length) return '<p class="empty">No films with both a budget and revenue match these filters.</p>';
     const xs = points.map(m => m.budget), ys = points.map(m => m.variance);
     const xPad = (Math.max(...xs) - Math.min(...xs)) * 0.06 || 1;
     const xMin = Math.min(...xs) - xPad, xMax = Math.max(...xs) + xPad;
@@ -81,11 +81,12 @@
       else if (!selected.length || allOn) base.push(m);
       else dim.push(m);
     });
-    const dimDots = dim.map(m => `<circle cx="${x(m.budget).toFixed(1)}" cy="${y(m.variance).toFixed(1)}" r="4" fill="#cfd6cb" fill-opacity=".7"><title>${esc(info(m))}</title></circle>`).join('');
+    const dimDots = dim.map(m => `<circle cx="${x(m.budget).toFixed(1)}" cy="${y(m.variance).toFixed(1)}" r="3.4" fill="transparent" stroke="#b7c0b2" stroke-width="1.3" stroke-opacity=".8"><title>${esc(info(m))}</title></circle>`).join('');
+    // Points are unfilled rings. The transparent fill keeps the whole circle hoverable for its tooltip.
     // With All on, every film keeps its own genre color; extra genre chips fade the rest back.
-    const baseOpacity = selected.length ? '.38' : '.9';
-    const baseDots = base.map(m => `<circle cx="${x(m.budget).toFixed(1)}" cy="${y(m.variance).toFixed(1)}" r="${selected.length ? 4 : 5.5}" fill="${genreColor(m.genres[0])}" fill-opacity="${baseOpacity}"><title>${esc(info(m))}</title></circle>`).join('');
-    const hotDots = hot.map(({ m, color }) => `<circle cx="${x(m.budget).toFixed(1)}" cy="${y(m.variance).toFixed(1)}" r="6.5" fill="${color}" stroke="#fff" stroke-width="1.6"><title>${esc(info(m))}</title></circle>`).join('');
+    const baseOpacity = selected.length ? '.45' : '.9';
+    const baseDots = base.map(m => `<circle cx="${x(m.budget).toFixed(1)}" cy="${y(m.variance).toFixed(1)}" r="${selected.length ? 3.4 : 4.5}" fill="transparent" stroke="${genreColor(m.genres[0])}" stroke-width="1.5" stroke-opacity="${baseOpacity}"><title>${esc(info(m))}</title></circle>`).join('');
+    const hotDots = hot.map(({ m, color }) => `<circle cx="${x(m.budget).toFixed(1)}" cy="${y(m.variance).toFixed(1)}" r="5.4" fill="transparent" stroke="${color}" stroke-width="2"><title>${esc(info(m))}</title></circle>`).join('');
     let trends = '';
     const trendNotes = [];
     if (showTrends) {
@@ -125,7 +126,7 @@
     const w = 560, h = 210, left = 54, right = 14, top = 14, bottom = 34;
     const packed = seriesList.map(s => ({ ...s, rows: profitByRating(movies, { genre: s.genre }) }));
     const ratings = [...new Set(packed.flatMap(s => s.rows.map(r => r.rating)))].sort((a, b) => a - b);
-    if (!ratings.length) return '<p class="empty">No demo points match these filters.</p>';
+    if (!ratings.length) return '<p class="empty">No films with both a budget and revenue match these filters.</p>';
     const profits = packed.flatMap(s => s.rows.map(r => r.profit));
     const yMin = Math.min(0, ...profits), yMax = Math.max(...profits);
     const ySpan = yMax - yMin || 1;
@@ -144,7 +145,7 @@
       const height = Math.max(1, Math.abs(baseY - topY));
       return `<rect x="${(cx - barWidth / 2).toFixed(1)}" y="${(row.profit >= 0 ? topY : baseY).toFixed(1)}" width="${barWidth}" height="${height.toFixed(1)}" fill="${s.color}" rx="2"><title>${esc(s.label)} · ${rating}★ · ${money(row.profit)} · ${row.films} films</title></rect>`;
     }).join('')).join('');
-    return `<svg class="overview-svg controversy-svg" viewBox="0 0 ${w} ${h}" role="img" aria-label="Average demo profit by average star rating">${grid}${labels}${bars}</svg>${legend(packed)}`;
+    return `<svg class="overview-svg controversy-svg" viewBox="0 0 ${w} ${h}" role="img" aria-label="Average profit by average MovieLens star rating">${grid}${labels}${bars}</svg>${legend(packed)}`;
   }
 
   function radarChart(seriesList) {
@@ -153,7 +154,7 @@
     const allOn = seriesList.some(s => s.key === 'all');
     const selected = seriesList.filter(s => s.key !== 'all').map(s => s.key);
     const axes = allOn || !selected.length ? profitByGenre(movies) : profitByGenre(movies, { genres: selected });
-    if (!axes.length) return '<p class="empty">No demo points match these filters.</p>';
+    if (!axes.length) return '<p class="empty">No films with both a budget and revenue match these filters.</p>';
     const maxValue = Math.max(
       ...axes.map(a => Math.abs(a.profit || 0)),
       ...axes.map(a => Math.abs(a.budget || 0)),
@@ -219,7 +220,7 @@
       + `<span><i class="controversy-legend-dashed" style="background:${BUDGET_COLOR}"></i>Avg budget</span>`
       + `${seriesList.map(s => `<span><i style="background:${s.color}"></i>${esc(s.label)}</span>`).join('')}`
       + `</div>`;
-    return `<svg class="overview-svg controversy-svg controversy-radar" viewBox="0 0 ${size} ${size}" role="img" aria-label="Average demo profit and budget in each genre">${rings}${spokes}${tickLabels}${shapes}</svg>${metricLegend}`;
+    return `<svg class="overview-svg controversy-svg controversy-radar" viewBox="0 0 ${size} ${size}" role="img" aria-label="Average profit and budget in each genre">${rings}${spokes}${tickLabels}${shapes}</svg>${metricLegend}`;
   }
 
   function syncChips() {
@@ -235,7 +236,7 @@
   function render() {
     const series = activeSeries();
     $('controversy-summary').textContent = `${series.length} series · ${series.map(s => s.label).join(', ')}`;
-    $('controversy-profits-line').innerHTML = lineChart(series, 'profitsVsControversy', 'Average demo profit versus Controversy Score');
+    $('controversy-profits-line').innerHTML = lineChart(series, 'profitsVsControversy', 'Average profit versus Controversy Score');
     $('controversy-budget-line').innerHTML = budgetScatter(series);
     $('controversy-rating-bars').innerHTML = ratingBars(series);
     $('controversy-radar').innerHTML = radarChart(series);
