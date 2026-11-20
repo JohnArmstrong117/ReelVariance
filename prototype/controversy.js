@@ -7,6 +7,7 @@
   const ALL_COLOR = '#28664e';
   let showAll = true;
   let selectedGenres = new Set();
+  let showTrends = true;
 
   function money(n) {
     if (n == null || !Number.isFinite(n)) return '—';
@@ -53,6 +54,68 @@
       return `<g><path d="${d}" fill="none" stroke="${s.color}" stroke-width="2.2"/>${dots}</g>`;
     }).join('');
     return `<svg class="overview-svg controversy-svg" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(aria)}">${grid}${axis}${paths}</svg>${legend(packed)}`;
+  }
+
+  // Scatter of every film (budget vs Controversy Score). Chips highlight rather than filter.
+  function budgetScatter(seriesList) {
+    const w = 560, h = 210, left = 54, right = 24, top = 14, bottom = 34;
+    const selected = seriesList.filter(s => s.key !== 'all').map(s => s.key);
+    const allOn = seriesList.some(s => s.key === 'all');
+    const points = movies.filter(m => Number.isFinite(m.budget) && Number.isFinite(m.variance));
+    if (!points.length) return '<p class="empty">No demo points match these filters.</p>';
+    const xs = points.map(m => m.budget), ys = points.map(m => m.variance);
+    const xPad = (Math.max(...xs) - Math.min(...xs)) * 0.06 || 1;
+    const xMin = Math.min(...xs) - xPad, xMax = Math.max(...xs) + xPad;
+    const yMin = 0, yMax = Math.max(...ys) * 1.08;
+    const x = v => left + (v - xMin) / (xMax - xMin) * (w - left - right);
+    const y = v => h - bottom - (v - yMin) / (yMax - yMin || 1) * (h - bottom - top);
+    const yTicks = [yMin, yMax / 2, yMax];
+    const xTicks = [xMin, (xMin + xMax) / 2, xMax];
+    const grid = yTicks.map(v => `<line x1="${left}" x2="${w - right}" y1="${y(v)}" y2="${y(v)}" class="grid-line"/><text x="${left - 8}" y="${y(v) + 3}" text-anchor="end">${v.toFixed(2)}</text>`).join('');
+    const axis = xTicks.map(v => `<text x="${x(v)}" y="${h - 10}" text-anchor="middle">${money(v)}</text>`).join('');
+    const info = m => `${m.title} (${m.year}) · budget ${money(m.budget)} · Controversy ${m.variance.toFixed(2)} · ${m.genres.join(', ')}`;
+    const dim = [], base = [], hot = [];
+    points.forEach(m => {
+      const genre = selected.find(g => m.genres.includes(g));
+      if (genre) hot.push({ m, color: genreColor(genre) });
+      else if (!selected.length || allOn) base.push(m);
+      else dim.push(m);
+    });
+    const dimDots = dim.map(m => `<circle cx="${x(m.budget).toFixed(1)}" cy="${y(m.variance).toFixed(1)}" r="4" fill="#cfd6cb" fill-opacity=".7"><title>${esc(info(m))}</title></circle>`).join('');
+    const baseOpacity = selected.length ? '.5' : '.85';
+    const baseDots = base.map(m => `<circle cx="${x(m.budget).toFixed(1)}" cy="${y(m.variance).toFixed(1)}" r="${selected.length ? 4 : 5}" fill="${ALL_COLOR}" fill-opacity="${baseOpacity}"><title>${esc(info(m))}</title></circle>`).join('');
+    const hotDots = hot.map(({ m, color }) => `<circle cx="${x(m.budget).toFixed(1)}" cy="${y(m.variance).toFixed(1)}" r="6.5" fill="${color}" stroke="#fff" stroke-width="1.6"><title>${esc(info(m))}</title></circle>`).join('');
+    let trends = '';
+    const trendNotes = [];
+    if (showTrends) {
+      const groups = seriesList.map(s => ({
+        s,
+        films: s.genre ? points.filter(m => m.genres.includes(s.genre)) : points
+      }));
+      groups.forEach(({ s, films }) => {
+        const fit = linearFit(films.map(m => [m.budget, m.variance]));
+        if (!fit) { trendNotes.push(`${s.label}: too few films`); return; }
+        const x0 = Math.min(...films.map(m => m.budget)), x1 = Math.max(...films.map(m => m.budget));
+        const dir = fit.slope >= 0 ? 'rising' : 'falling';
+        trends += `<line x1="${x(x0).toFixed(1)}" y1="${y(fit.intercept + fit.slope * x0).toFixed(1)}" x2="${x(x1).toFixed(1)}" y2="${y(fit.intercept + fit.slope * x1).toFixed(1)}" stroke="${s.color}" stroke-width="2.2" stroke-dasharray="6 4" stroke-linecap="round" clip-path="url(#scatter-clip)"><title>${esc(s.label)} trend · ${dir} · ${(fit.slope * 1e7).toFixed(2)} stars² per $10M · ${films.length} films</title></line>`;
+      });
+    }
+    const clip = `<defs><clipPath id="scatter-clip"><rect x="${left}" y="${top}" width="${w - left - right}" height="${h - top - bottom}"/></clipPath></defs>`;
+    const toggle = `<button type="button" class="controversy-trend-toggle" data-trend-toggle aria-pressed="${showTrends}" title="Show or hide trend lines">${showTrends ? 'Trend lines: on' : 'Trend lines: off'}</button>`;
+    const key = `<div class="genre-legend language-legend">${seriesList.map(s => `<span><i style="background:${s.color}"></i>${esc(s.label)}${s.key === 'all' && selected.length ? ' (others)' : s.key !== 'all' ? ' (highlighted)' : ''}</span>`).join('')}${showTrends ? '<span><i class="controversy-trend-swatch"></i>Trend line (least squares)</span>' : ''}${trendNotes.map(n => `<span>${esc(n)}</span>`).join('')}${toggle}</div>`;
+    return `<svg class="overview-svg controversy-svg" viewBox="0 0 ${w} ${h}" role="img" aria-label="Scatterplot of film budget versus Controversy Score">${clip}${grid}${axis}${dimDots}${baseDots}${trends}${hotDots}</svg>${key}`;
+  }
+
+  // Ordinary least-squares line through [x, y] pairs; null if undetermined.
+  function linearFit(pairs) {
+    if (pairs.length < 2) return null;
+    const n = pairs.length;
+    const mx = pairs.reduce((a, p) => a + p[0], 0) / n;
+    const my = pairs.reduce((a, p) => a + p[1], 0) / n;
+    const sxx = pairs.reduce((a, p) => a + (p[0] - mx) ** 2, 0);
+    if (!sxx) return null;
+    const slope = pairs.reduce((a, p) => a + (p[0] - mx) * (p[1] - my), 0) / sxx;
+    return { slope, intercept: my - slope * mx };
   }
 
   function ratingBars(seriesList) {
@@ -170,7 +233,7 @@
     const series = activeSeries();
     $('controversy-summary').textContent = `${series.length} series · ${series.map(s => s.label).join(', ')}`;
     $('controversy-profits-line').innerHTML = lineChart(series, 'profitsVsControversy', 'Average demo profit versus Controversy Score');
-    $('controversy-budget-line').innerHTML = lineChart(series, 'controversyVsBudget', 'Average Controversy Score versus budget');
+    $('controversy-budget-line').innerHTML = budgetScatter(series);
     $('controversy-rating-bars').innerHTML = ratingBars(series);
     $('controversy-radar').innerHTML = radarChart(series);
     syncChips();
@@ -197,6 +260,12 @@
     } else {
       selectedGenres.add(genre);
     }
+    render();
+  });
+
+  $('controversy-budget-line').addEventListener('click', event => {
+    if (!event.target.closest('[data-trend-toggle]')) return;
+    showTrends = !showTrends;
     render();
   });
 

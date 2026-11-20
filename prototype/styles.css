@@ -272,6 +272,12 @@ footer span:nth-child(2) { text-align: center; line-height: 1.8; }
 .controversy-radar-ring { fill: none; stroke: #e4e9e0; stroke-width: 1; }
 .controversy-radar-spoke { stroke: #e4e9e0; stroke-width: 1; }
 .controversy-radar text { font: 10px Arial, sans-serif; fill: var(--muted); }
+#controversy-budget-line circle { cursor: pointer; transition: stroke-width .12s; }
+#controversy-budget-line circle:hover { stroke: var(--ink, #1f2a24); stroke-width: 2px; }
+.controversy-trend-toggle { margin-left: auto; padding: 2px 9px; border: 1px solid #cbd7c6; border-radius: 999px; background: #fff; font: 9px Arial, sans-serif; color: var(--muted); cursor: pointer; }
+.controversy-trend-toggle[aria-pressed=true] { background: var(--mint, #eef4ea); color: var(--green, #28664e); border-color: var(--green, #28664e); }
+.controversy-trend-toggle:focus-visible { outline: 2px solid var(--green, #28664e); outline-offset: 2px; }
+.controversy-trend-swatch { width: 14px !important; height: 0 !important; border-radius: 0 !important; border-top: 2px dashed var(--muted); }
 .controversy-radar-tick { font: 9px Arial, sans-serif; fill: #6a7466; }
 .controversy-radar-budget { fill-opacity: .08; }
 .controversy-radar-legend { margin-top: 6px; }
